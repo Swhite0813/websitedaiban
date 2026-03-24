@@ -1,7 +1,7 @@
 // API服务配置
 const API_BASE_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3001/api'
-  : 'https://websitedaiban-rjkq.vercel.app/api';
+  : 'https://daihui-api-237979-9-1415563523.sh.run.tcloudbase.com/api';
 
 // 存储Token
 const storage = {
