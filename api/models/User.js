@@ -28,29 +28,42 @@ const userSchema = new mongoose.Schema({
   lastLoginAt: {
     type: Date,
     default: Date.now
+  },
+  verificationCode: {
+    type: String,
+    default: null
+  },
+  verificationCodeExpires: {
+    type: Date,
+    default: null
   }
 });
 
-// 验证码临时存储
-const verificationCodes = new Map();
-
-userSchema.statics.storeVerificationCode = function(email, code) {
-  verificationCodes.set(email.toLowerCase(), {
-    code,
-    expiresAt: Date.now() + 5 * 60 * 1000
-  });
+// 验证码存储到MongoDB，支持多实例部署
+userSchema.statics.storeVerificationCode = async function(email, code) {
+  await this.findOneAndUpdate(
+    { email: email.toLowerCase() },
+    {
+      $set: {
+        verificationCode: code,
+        verificationCodeExpires: new Date(Date.now() + 5 * 60 * 1000)
+      }
+    },
+    { upsert: true, new: true }
+  );
 };
 
-userSchema.statics.verifyCode = function(email, code) {
-  const key = email.toLowerCase();
-  const record = verificationCodes.get(key);
-  if (!record) return false;
-  if (Date.now() > record.expiresAt) {
-    verificationCodes.delete(key);
+userSchema.statics.verifyCode = async function(email, code) {
+  const user = await this.findOne({ email: email.toLowerCase() });
+  if (!user || !user.verificationCode) return false;
+  if (new Date() > user.verificationCodeExpires) {
+    await this.updateOne({ email: email.toLowerCase() }, { $unset: { verificationCode: 1, verificationCodeExpires: 1 } });
     return false;
   }
-  const isValid = record.code === code;
-  if (isValid) verificationCodes.delete(key);
+  const isValid = user.verificationCode === code;
+  if (isValid) {
+    await this.updateOne({ email: email.toLowerCase() }, { $unset: { verificationCode: 1, verificationCodeExpires: 1 } });
+  }
   return isValid;
 };
 

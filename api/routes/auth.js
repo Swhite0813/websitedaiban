@@ -14,7 +14,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: '邮箱和验证码不能为空' });
     }
 
-    const isValid = User.verifyCode(email, code);
+    const isValid = await User.verifyCode(email, code);
     if (!isValid) {
       return res.status(400).json({ error: '验证码错误或已过期' });
     }

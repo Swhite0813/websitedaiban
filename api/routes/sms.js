@@ -53,7 +53,7 @@ router.post('/send-code', async (req, res) => {
     }
 
     const code = generateCode();
-    User.storeVerificationCode(email, code);
+    await User.storeVerificationCode(email, code);
 
     if (RESEND_API_KEY) {
       try {
