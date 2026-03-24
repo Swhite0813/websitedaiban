@@ -7,6 +7,21 @@ const todoSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  teamId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    default: null,
+    index: true
+  },
+  assigneeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  assigneePhone: {
+    type: String,
+    default: null
+  },
   title: {
     type: String,
     required: true
@@ -42,7 +57,6 @@ const todoSchema = new mongoose.Schema({
   }
 });
 
-// 更新时自动更新updatedAt
 todoSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

@@ -19,6 +19,7 @@ mongoose.connect(MONGODB_URI)
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/todos', require('./routes/todos'));
 app.use('/api/sms', require('./routes/sms'));
+app.use('/api/teams', require('./routes/teams'));
 
 // 健康检查
 app.get('/api/health', (req, res) => {
