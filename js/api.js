@@ -1,7 +1,7 @@
 // API服务配置
 const API_BASE_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3001/api'
-  : 'https://webstatedalban-api.vercel.app/api';
+  : 'https://websitedaiban-rjkq.vercel.app/api';
 
 // 存储Token
 const storage = {
