@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server.js"
+    }
+  ],
+  "env": {
+    "MONGODB_URI": "@mongodb_uri",
+    "JWT_SECRET": "@jwt_secret",
+    "ALIYUN_ACCESS_KEY_ID": "@aliyun_access_key_id",
+    "ALIYUN_ACCESS_KEY_SECRET": "@aliyun_access_key_secret",
+    "SMS_SIGN_NAME": "@sms_sign_name",
+    "SMS_TEMPLATE_CODE": "@sms_template_code"
+  }
+}
