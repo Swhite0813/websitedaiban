@@ -1,5 +1,5 @@
-// ============================================================
-// 待会·就办 — Main App (Vanilla JS SPA)
+﻿// ============================================================
+// 寰呬細路灏卞姙 鈥?Main App (Vanilla JS SPA)
 // Connects to real backend via window.API (js/api.js)
 // ============================================================
 
@@ -20,7 +20,7 @@ function toast(msg, type = 'info') {
   if (!c) return;
   const el = document.createElement('div');
   el.className = `toast t-${type === 'success' ? 'ok' : type === 'error' ? 'err' : 'info'}`;
-  const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+  const icon = type === 'success' ? '鉁? : type === 'error' ? '鉁? : '鈩?;
   el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
   c.appendChild(el);
   setTimeout(() => el.remove(), 3500);
@@ -80,9 +80,9 @@ async function loadDashboard() {
 }
 
 // ---- Priority / Status labels ----
-const PRIO_LABEL = { high: '紧急', medium: '中', low: '低' };
+const PRIO_LABEL = { high: '绱ф€?, medium: '涓?, low: '浣? };
 const PRIO_CLASS = { high: 'b-high', medium: 'b-medium', low: 'b-low' };
-const STATUS_LABEL = { todo: '待办', doing: '进行中', done: '已完成' };
+const STATUS_LABEL = { todo: '寰呭姙', doing: '杩涜涓?, done: '宸插畬鎴? };
 const STATUS_CLASS = { todo: 'b-todo', doing: 'b-doing', done: 'b-done' };
 const STATUS_NEXT = { todo: 'doing', doing: 'done', done: 'todo' };
 
@@ -128,12 +128,12 @@ function renderHome() {
   <div class="page">
     <section class="hero">
       <div class="ctr">
-        <div class="badge b-low fu" style="margin-bottom:18px;display:inline-flex">现已支持团队协作</div>
-        <h1 class="fu d1">待会？<br><span style="color:var(--brand)">现在就办！</span></h1>
-        <p class="fu d2">个人任务管理 + 团队协作，帮你把"待会再说"变成"马上搞定"。简单、快速、真实落地。</p>
+        <div class="badge b-low fu" style="margin-bottom:18px;display:inline-flex">鐜板凡鏀寔鍥㈤槦鍗忎綔</div>
+        <h1 class="fu d1">寰呬細锛?br><span style="color:var(--brand)">鐜板湪灏卞姙锛?/span></h1>
+        <p class="fu d2">涓汉浠诲姟绠＄悊 + 鍥㈤槦鍗忎綔锛屽府浣犳妸"寰呬細鍐嶈"鍙樻垚"椹笂鎼炲畾"銆傜畝鍗曘€佸揩閫熴€佺湡瀹炶惤鍦般€?/p>
         <div class="flex gap-2 fu d3" style="justify-content:center;flex-wrap:wrap">
-          <button class="btn btn-brand" onclick="navigate('login')">免费开始使用</button>
-          <button class="btn btn-outline" onclick="navigate('features')">了解功能 →</button>
+          <button class="btn btn-brand" onclick="navigate('login')">鍏嶈垂寮€濮嬩娇鐢?/button>
+          <button class="btn btn-outline" onclick="navigate('features')">浜嗚В鍔熻兘 鈫?/button>
         </div>
       </div>
     </section>
@@ -141,7 +141,7 @@ function renderHome() {
     <section style="padding:40px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
       <div class="ctr">
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;max-width:600px;margin:0 auto">
-          ${[['8万+','活跃用户'],['99%','任务完成率'],['5x','协作效率提升']].map(([v,l],i)=>`
+          ${[['8涓?','娲昏穬鐢ㄦ埛'],['99%','浠诲姟瀹屾垚鐜?],['5x','鍗忎綔鏁堢巼鎻愬崌']].map(([v,l],i)=>`
           <div class="fu d${i+1}">
             <div class="snum" style="color:var(--brand)">${v}</div>
             <div class="text-sm text-muted mt-1">${l}</div>
@@ -153,15 +153,15 @@ function renderHome() {
     <section style="padding:70px 20px">
       <div class="ctr">
         <div class="text-center mb-6">
-          <div class="badge b-low" style="display:inline-flex;margin-bottom:12px">核心功能</div>
-          <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:10px">简单，才是最大效率</h2>
-          <p class="text-muted">三个核心模块，解决效率管理最本质的问题。</p>
+          <div class="badge b-low" style="display:inline-flex;margin-bottom:12px">鏍稿績鍔熻兘</div>
+          <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:10px">绠€鍗曪紝鎵嶆槸鏈€澶ф晥鐜?/h2>
+          <p class="text-muted">涓変釜鏍稿績妯″潡锛岃В鍐虫晥鐜囩鐞嗘渶鏈川鐨勯棶棰樸€?/p>
         </div>
         <div class="fgrid">
           ${[
-            ['个人待办','随手记录，设置优先级，三态流转。清单越做越短，效率越来越高。','M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
-            ['团队协同','创建团队，邀请成员，分配任务。每个人知道自己该做什么，不再靠催。','M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75'],
-            ['进度追踪','实时查看每位成员的任务状态，项目进展一目了然，不用开会也知道全局。','M12 20h9 M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z']
+            ['涓汉寰呭姙','闅忔墜璁板綍锛岃缃紭鍏堢骇锛屼笁鎬佹祦杞€傛竻鍗曡秺鍋氳秺鐭紝鏁堢巼瓒婃潵瓒婇珮銆?,'M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
+            ['鍥㈤槦鍗忓悓','鍒涘缓鍥㈤槦锛岄個璇锋垚鍛橈紝鍒嗛厤浠诲姟銆傛瘡涓汉鐭ラ亾鑷繁璇ュ仛浠€涔堬紝涓嶅啀闈犲偓銆?,'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75'],
+            ['杩涘害杩借釜','瀹炴椂鏌ョ湅姣忎綅鎴愬憳鐨勪换鍔＄姸鎬侊紝椤圭洰杩涘睍涓€鐩簡鐒讹紝涓嶇敤寮€浼氫篃鐭ラ亾鍏ㄥ眬銆?,'M12 20h9 M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z']
           ].map(([title,desc,path],i)=>`
           <div class="card card-h p-6 fu d${i+1}">
             <div class="ficon">
@@ -179,10 +179,10 @@ function renderHome() {
     <section style="padding:60px 20px;background:var(--surface);border-top:1px solid var(--border)">
       <div class="ctr">
         <div class="card-brand p-6" style="max-width:560px;margin:0 auto;text-align:center">
-          <h2 style="font-size:clamp(1.6rem,4vw,2.4rem);margin-bottom:12px">别再拖了</h2>
-          <p class="text-muted mb-4">注册只需 30 秒，把那份拖了一周的事今天做完吧。</p>
-          <button class="btn btn-brand" onclick="navigate('login')">马上开始，不拖了</button>
-          <p class="text-xs text-muted mt-3">永久免费 · 无需信用卡</p>
+          <h2 style="font-size:clamp(1.6rem,4vw,2.4rem);margin-bottom:12px">鍒啀鎷栦簡</h2>
+          <p class="text-muted mb-4">娉ㄥ唽鍙渶 30 绉掞紝鎶婇偅浠芥嫋浜嗕竴鍛ㄧ殑浜嬩粖澶╁仛瀹屽惂銆?/p>
+          <button class="btn btn-brand" onclick="navigate('login')">椹笂寮€濮嬶紝涓嶆嫋浜?/button>
+          <p class="text-xs text-muted mt-3">姘镐箙鍏嶈垂 路 鏃犻渶淇＄敤鍗?/p>
         </div>
       </div>
     </section>
@@ -190,10 +190,10 @@ function renderHome() {
     <footer style="padding:28px 20px;border-top:1px solid var(--border);background:var(--surface)">
       <div class="ctr flex justify-between items-center flex-wrap gap-2">
         <div class="logo">
-          <div class="logo-icon" style="width:28px;height:28px;font-size:12px">待</div>
-          <span class="logo-text" style="font-size:15px">待会<span style="color:var(--brand)">·</span>就办</span>
+          <div class="logo-icon" style="width:28px;height:28px;font-size:12px">寰?/div>
+          <span class="logo-text" style="font-size:15px">寰呬細<span style="color:var(--brand)">路</span>灏卞姙</span>
         </div>
-        <p class="text-sm text-muted">© 2026 待会·就办. 保留所有权利。</p>
+        <p class="text-sm text-muted">漏 2026 寰呬細路灏卞姙. 淇濈暀鎵€鏈夋潈鍒┿€?/p>
       </div>
     </footer>
   </div>
@@ -203,167 +203,9 @@ function renderHome() {
 // ============================================================
 // PAGE: LOGIN
 // ============================================================
-let loginState = { step: 'email', email: '', otp: ['','','','','',''], countdown: 0, loading: false, error: '', otpError: '', devCode: '' };
-let countdownTimer = null;
-
-function startCountdown() {
-  loginState.countdown = 60;
-  clearInterval(countdownTimer);
-  countdownTimer = setInterval(() => {
-    loginState.countdown--;
-    const el = document.getElementById('cd-txt');
-    if (el) el.textContent = loginState.countdown > 0 ? `${loginState.countdown} 秒后可重发` : '重新发送';
-    if (loginState.countdown <= 0) clearInterval(countdownTimer);
-  }, 1000);
-}
-
-async function sendCode() {
-  const email = document.getElementById('email-inp')?.value?.trim() || '';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    loginState.error = '请输入正确的邮箱地址';
-    document.getElementById('email-err').textContent = loginState.error;
-    return;
-  }
-  loginState.loading = true;
-  loginState.error = '';
-  loginState.email = email;
-  document.getElementById('send-btn').disabled = true;
-  document.getElementById('send-btn').innerHTML = ICON.spin + '发送中…';
-  try {
-    const res = await API.auth.sendCode(email);
-    loginState.devCode = res.code || '';
-    loginState.step = 'otp';
-    render();
-    setTimeout(() => {
-      document.getElementById('otp-0')?.focus();
-      startCountdown();
-    }, 50);
-  } catch(e) {
-    loginState.error = e.message || '发送失败，请稍后重试';
-    document.getElementById('email-err').textContent = loginState.error;
-    document.getElementById('send-btn').disabled = false;
-    document.getElementById('send-btn').innerHTML = '获取验证码';
-  }
-  loginState.loading = false;
-}
-
-async function verifyOtp() {
-  const code = Array.from({length:6},(_,i)=>document.getElementById(`otp-${i}`)?.value||'').join('');
-  if (code.length < 6) return;
-  loginState.otpError = '';
-  document.getElementById('otp-btn').disabled = true;
-  document.getElementById('otp-btn').innerHTML = ICON.spin + '验证中…';
-  try {
-    const res = await API.auth.login(loginState.email, code);
-    S.user = res.user;
-    loginState.step = 'success';
-    render();
-    await loadDashboard();
-    setTimeout(() => navigate('dashboard'), 1500);
-  } catch(e) {
-    loginState.otpError = e.message || '验证码错误';
-    const errEl = document.getElementById('otp-err');
-    if (errEl) errEl.textContent = loginState.otpError;
-    document.getElementById('otp-btn').disabled = false;
-    document.getElementById('otp-btn').innerHTML = '确认登录';
-  }
-}
-
-function otpKeydown(e, i) {
-  const boxes = Array.from({length:6},(_,k)=>document.getElementById(`otp-${k}`));
-  if (e.key === 'Backspace') {
-    if (boxes[i].value) { boxes[i].value = ''; boxes[i].classList.remove('filled'); }
-    else if (i > 0) { boxes[i-1].focus(); boxes[i-1].value=''; boxes[i-1].classList.remove('filled'); }
-  } else if (e.key === 'ArrowLeft' && i > 0) boxes[i-1].focus();
-  else if (e.key === 'ArrowRight' && i < 5) boxes[i+1].focus();
-  else if (e.key === 'Enter') verifyOtp();
-}
-
-function otpInput(e, i) {
-  const val = e.target.value.replace(/\D/g,'').slice(-1);
-  e.target.value = val;
-  if (val) {
-    e.target.classList.add('filled');
-    if (i < 5) document.getElementById(`otp-${i+1}`)?.focus();
-  } else e.target.classList.remove('filled');
-  const code = Array.from({length:6},(_,k)=>document.getElementById(`otp-${k}`)?.value||'').join('');
-  if (code.length === 6) verifyOtp();
-}
-
-function otpPaste(e) {
-  e.preventDefault();
-  const text = e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);
-  text.split('').forEach((c,i) => {
-    const box = document.getElementById(`otp-${i}`);
-    if (box) { box.value=c; box.classList.add('filled'); }
-  });
-  document.getElementById(`otp-${Math.min(text.length,5)}`)?.focus();
-  if (text.length === 6) verifyOtp();
-}
-
-function renderLogin() {
-  const { step, phone, devCode } = loginState;
-  return `
-  <div class="page" style="background:linear-gradient(135deg,#EEF1FF 0%,#F5F3FF 50%,#EFFFFA 100%);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
-    <div style="width:100%;max-width:420px">
-      <div class="text-center mb-6">
-        <div class="logo" style="justify-content:center;margin-bottom:4px">
-          <div class="logo-icon">待</div>
-          <span class="logo-text">待会<span style="color:var(--brand)">·</span>就办</span>
-        </div>
-      </div>
-      <div class="card-brand p-6">
-        ${step === 'email' ? renderLoginPhone() : step === 'otp' ? renderLoginOtp(email, devCode) : renderLoginSuccess()}
-      </div>
-      ${step !== 'success' ? `<p class="text-center text-sm text-muted mt-4"><button class="nav-btn" onclick="navigate('home')">← 返回首页</button></p>` : ''}
-    </div>
-  </div>`;
-}
-
-function renderLoginPhone() {
-  return `
-    <h2 style="font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;margin-bottom:6px">登录 / 注册</h2>
-    <p class="text-sm text-muted mb-4">邮箱验证，30 秒搞定</p>
-    <label class="label">邮箱地址</label>
-    <input id="email-inp" type="email" placeholder="请输入您的邮箱地址" class="inp mb-3" onkeydown="if(event.key==='Enter')sendCode()" />
-    <p id="email-err" class="text-xs mb-3" style="color:var(--red);min-height:18px"></p>
-    <button id="send-btn" class="btn btn-brand w-full" onclick="sendCode()">获取验证码</button>
-    <p class="text-xs text-center mt-4 text-muted">登录即同意 <a href="#" style="color:var(--brand)">服务条款</a> 和 <a href="#" style="color:var(--brand)">隐私政策</a></p>
-  `;
-}
-
-function renderLoginOtp(email, devCode) {
-  return `
-    <button class="flex items-center gap-2 text-sm text-muted mb-4" style="cursor:pointer" onclick="loginState.step='email';render()">← 返回</button>
-    <h2 style="font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;margin-bottom:6px">输入验证码</h2>
-    <p class="text-sm text-muted mb-4">已发送至 <strong>${email}</strong></p>
-    ${devCode ? `<div class="flex items-center gap-2 p-4 rounded mb-4" style="background:var(--bl);border:1px solid var(--bb);font-size:13px"><span style="color:var(--brand)">💡 演示验证码：<strong>${devCode}</strong></span></div>` : ''}
-    <label class="label">6 位验证码</label>
-    <div class="otp-wrap mb-2" onpaste="otpPaste(event)">
-      ${Array.from({length:6},(_,i)=>`<input id="otp-${i}" class="otp-box" type="text" inputmode="numeric" maxlength="1" oninput="otpInput(event,${i})" onkeydown="otpKeydown(event,${i})" />`).join('')}
-    </div>
-    <p id="otp-err" class="text-xs mb-3" style="color:var(--red);min-height:18px"></p>
-    <button id="otp-btn" class="btn btn-brand w-full mt-2" onclick="verifyOtp()">确认登录</button>
-    <p class="text-center text-sm mt-3 text-muted" id="cd-txt"><button class="nav-btn" onclick="startCountdown()">重新发送</button></p>
-  `;
-}
-
-function renderLoginSuccess() {
-  return `
-    <div class="text-center" style="padding:20px 0">
-      <div style="width:64px;height:64px;border-radius:50%;background:var(--gl);border:2px solid #a8f0d5;display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
-        <svg width="32" height="32" viewBox="0 0 50 50" fill="none"><polyline class="chk-path" points="12,25 22,35 38,15" stroke="var(--green)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <h2 style="font-family:'Noto Serif SC',serif;font-size:22px;margin-bottom:8px">登录成功！</h2>
-      <p class="text-muted text-sm">正在进入工作台…</p>
-      <div style="height:4px;background:var(--s2);border-radius:2px;margin-top:20px;overflow:hidden">
-        <div style="height:100%;background:var(--brand);border-radius:2px;animation:progressFill 1.4s ease forwards"></div>
-      </div>
-    </div>`;
-}
 
 // ============================================================
-// DASHBOARD — TODOS TAB
+// DASHBOARD 鈥?TODOS TAB
 // ============================================================
 async function toggleTodo(id, currentStatus) {
   const next = STATUS_NEXT[currentStatus] || 'todo';
@@ -372,7 +214,7 @@ async function toggleTodo(id, currentStatus) {
     const t = S.todos.find(x => x._id === id);
     if (t) t.status = next;
     renderDashContent();
-  } catch(e) { toast(e.message || '操作失败', 'error'); }
+  } catch(e) { toast(e.message || '鎿嶄綔澶辫触', 'error'); }
 }
 
 async function deleteTodo(id) {
@@ -380,8 +222,8 @@ async function deleteTodo(id) {
     await API.todos.delete(id);
     S.todos = S.todos.filter(x => x._id !== id);
     renderDashContent();
-    toast('已删除', 'success');
-  } catch(e) { toast(e.message || '删除失败', 'error'); }
+    toast('宸插垹闄?, 'success');
+  } catch(e) { toast(e.message || '鍒犻櫎澶辫触', 'error'); }
 }
 
 async function addTodo(e) {
@@ -392,16 +234,16 @@ async function addTodo(e) {
   if (!title) return;
   const btn = document.getElementById('new-todo-btn');
   btn.disabled = true;
-  btn.innerHTML = ICON.spin + '添加中…';
+  btn.innerHTML = ICON.spin + '娣诲姞涓€?;
   try {
     const res = await API.todos.create({ title, priority: prioEl?.value || 'medium' });
     S.todos.unshift(res.todo);
     titleEl.value = '';
     renderDashContent();
-    toast('已添加', 'success');
-  } catch(e) { toast(e.message || '添加失败', 'error'); }
+    toast('宸叉坊鍔?, 'success');
+  } catch(e) { toast(e.message || '娣诲姞澶辫触', 'error'); }
   btn.disabled = false;
-  btn.innerHTML = '添加';
+  btn.innerHTML = '娣诲姞';
 }
 
 function renderTodosTab() {
@@ -418,26 +260,26 @@ function renderTodosTab() {
   <div>
     <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
       <div>
-        <h2 style="font-size:20px;font-weight:700">我的待办</h2>
-        <p class="text-sm text-muted mt-1">共 ${counts.all} 项 · ${counts.done} 项已完成</p>
+        <h2 style="font-size:20px;font-weight:700">鎴戠殑寰呭姙</h2>
+        <p class="text-sm text-muted mt-1">鍏?${counts.all} 椤?路 ${counts.done} 椤瑰凡瀹屾垚</p>
       </div>
     </div>
     <form class="card p-4 mb-4 sd" onsubmit="addTodo(event)" style="display:flex;gap:10px;flex-wrap:wrap">
-      <input id="new-todo-title" class="inp flex-1" style="min-width:180px" placeholder="添加新待办…" required />
+      <input id="new-todo-title" class="inp flex-1" style="min-width:180px" placeholder="娣诲姞鏂板緟鍔炩€? required />
       <select id="new-todo-prio" class="inp" style="width:90px">
-        <option value="high">紧急</option>
-        <option value="medium" selected>中</option>
-        <option value="low">低</option>
+        <option value="high">绱ф€?/option>
+        <option value="medium" selected>涓?/option>
+        <option value="low">浣?/option>
       </select>
-      <button id="new-todo-btn" class="btn btn-brand btn-sm" type="submit">${ICON.plus} 添加</button>
+      <button id="new-todo-btn" class="btn btn-brand btn-sm" type="submit">${ICON.plus} 娣诲姞</button>
     </form>
     <div class="flex gap-2 mb-4 flex-wrap">
-      ${[['all','全部'],['todo','待办'],['doing','进行中'],['done','已完成']].map(([k,l])=>
+      ${[['all','鍏ㄩ儴'],['todo','寰呭姙'],['doing','杩涜涓?],['done','宸插畬鎴?]].map(([k,l])=>
         `<button class="btn btn-xs ${filter===k?'btn-ghost':'btn-surface'}" onclick="window._todoFilter='${k}';renderDashContent()">${l} (${counts[k]})</button>`
       ).join('')}
     </div>
     <div class="space-y-2">
-      ${filtered.length === 0 ? `<div class="card p-6 text-center text-muted text-sm">暂无待办</div>` :
+      ${filtered.length === 0 ? `<div class="card p-6 text-center text-muted text-sm">鏆傛棤寰呭姙</div>` :
         filtered.map(t => `
         <div class="trow ${t.status==='done'?'done':''}">
           <button class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="toggleTodo('${t._id}','${t.status}')">
@@ -448,8 +290,8 @@ function renderTodosTab() {
           <div class="flex items-center gap-2 shrink-0">
             ${badgePrio(t.priority)}
             ${badgeStatus(t.status)}
-            <button class="btn btn-xs btn-surface" title="切换状态" onclick="toggleTodo('${t._id}','${t.status}')">${ICON.rotate}</button>
-            <button class="btn btn-xs btn-danger" title="删除" onclick="deleteTodo('${t._id}')">${ICON.trash}</button>
+            <button class="btn btn-xs btn-surface" title="鍒囨崲鐘舵€? onclick="toggleTodo('${t._id}','${t.status}')">${ICON.rotate}</button>
+            <button class="btn btn-xs btn-danger" title="鍒犻櫎" onclick="deleteTodo('${t._id}')">${ICON.trash}</button>
           </div>
         </div>`).join('')
       }
@@ -458,7 +300,7 @@ function renderTodosTab() {
 }
 
 // ============================================================
-// DASHBOARD — TEAM TAB
+// DASHBOARD 鈥?TEAM TAB
 // ============================================================
 function myTeam() {
   return S.teams.find(t => t.members?.some(m => m.userId === S.user?.id || m.userId === S.user?._id));
@@ -474,32 +316,32 @@ async function createTeam(e) {
   const name = nameEl?.value?.trim();
   if (!name) return;
   const btn = document.getElementById('create-team-btn');
-  btn.disabled = true; btn.innerHTML = ICON.spin + '创建中…';
+  btn.disabled = true; btn.innerHTML = ICON.spin + '鍒涘缓涓€?;
   try {
     const res = await API.teams.create(name);
     S.teams.push({ ...res.team, todos: [] });
-    toast('团队创建成功', 'success');
+    toast('鍥㈤槦鍒涘缓鎴愬姛', 'success');
     window._teamView = 'main';
     renderDashContent();
-  } catch(e) { toast(e.message || '创建失败', 'error'); }
-  btn.disabled = false; btn.innerHTML = '确认创建';
+  } catch(e) { toast(e.message || '鍒涘缓澶辫触', 'error'); }
+  btn.disabled = false; btn.innerHTML = '纭鍒涘缓';
 }
 
 async function inviteMember() {
   const inp = document.getElementById('invite-phone');
   const phone = inp?.value?.trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phone)) { toast('请输入正确的邮箱地址', 'error'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phone)) { toast('璇疯緭鍏ユ纭殑閭鍦板潃', 'error'); return; }
   const team = myTeam();
   if (!team) return;
   const btn = document.getElementById('invite-btn');
-  btn.disabled = true; btn.innerHTML = ICON.spin + '邀请中…';
+  btn.disabled = true; btn.innerHTML = ICON.spin + '閭€璇蜂腑鈥?;
   const statusEl = document.getElementById('invite-status');
   try {
     // Check phone registered first
     const check = await API.teams.checkPhone(phone);
     if (!check.exists) {
-      if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">该邮箱尚未注册，请对方先注册后再邀请</span>`;
-      btn.disabled = false; btn.innerHTML = '邀请';
+      if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">璇ラ偖绠卞皻鏈敞鍐岋紝璇峰鏂瑰厛娉ㄥ唽鍚庡啀閭€璇?/span>`;
+      btn.disabled = false; btn.innerHTML = '閭€璇?;
       return;
     }
     await API.teams.invite(team._id, phone);
@@ -511,29 +353,29 @@ async function inviteMember() {
       if (idx >= 0) S.teams[idx] = { ...updated, todos: S.teams[idx].todos || [] };
     }
     inp.value = '';
-    if (statusEl) statusEl.innerHTML = `<span style="color:var(--green)">✓ 邀请成功！</span>`;
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--green)">鉁?閭€璇锋垚鍔燂紒</span>`;
     setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 3000);
     renderDashContent();
-    toast('邀请成功', 'success');
+    toast('閭€璇锋垚鍔?, 'success');
   } catch(err) {
-    const msg = err.message || '邀请失败';
+    const msg = err.message || '閭€璇峰け璐?;
     if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">${msg}</span>`;
     toast(msg, 'error');
   }
-  btn.disabled = false; btn.innerHTML = '邀请';
+  btn.disabled = false; btn.innerHTML = '閭€璇?;
 }
 
 async function removeMember(phone) {
   const team = myTeam();
   if (!team) return;
-  if (!confirm(`确认移除该成员？`)) return;
+  if (!confirm(`纭绉婚櫎璇ユ垚鍛橈紵`)) return;
   try {
     await API.teams.removeMember(team._id, phone);
     const idx = S.teams.findIndex(t => t._id === team._id);
     if (idx >= 0) S.teams[idx].members = S.teams[idx].members.filter(m => m.phone !== phone);
     renderDashContent();
-    toast('已移除', 'success');
-  } catch(e) { toast(e.message || '操作失败', 'error'); }
+    toast('宸茬Щ闄?, 'success');
+  } catch(e) { toast(e.message || '鎿嶄綔澶辫触', 'error'); }
 }
 
 function renderTeamTab() {
@@ -542,27 +384,27 @@ function renderTeamTab() {
   if (!team && view !== 'create') {
     return `
     <div>
-      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px">我的团队</h2>
-      <p class="text-sm text-muted mb-6">你还没有加入任何团队</p>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px">鎴戠殑鍥㈤槦</h2>
+      <p class="text-sm text-muted mb-6">浣犺繕娌℃湁鍔犲叆浠讳綍鍥㈤槦</p>
       <div class="card p-6 text-center" style="max-width:360px">
         <div class="ficon" style="margin:0 auto 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">创建第一个团队</h3>
-        <p class="text-sm text-muted mb-4">邀请成员，分配任务，共同完成目标。</p>
-        <button class="btn btn-brand w-full" onclick="window._teamView='create';renderDashContent()">${ICON.plus} 创建团队</button>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">鍒涘缓绗竴涓洟闃?/h3>
+        <p class="text-sm text-muted mb-4">閭€璇锋垚鍛橈紝鍒嗛厤浠诲姟锛屽叡鍚屽畬鎴愮洰鏍囥€?/p>
+        <button class="btn btn-brand w-full" onclick="window._teamView='create';renderDashContent()">${ICON.plus} 鍒涘缓鍥㈤槦</button>
       </div>
     </div>`;
   }
   if (view === 'create') {
     return `
     <div>
-      <button class="flex items-center gap-2 text-sm text-muted mb-4" style="cursor:pointer" onclick="window._teamView='main';renderDashContent()">${ICON.back} 返回</button>
-      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px">创建团队</h2>
+      <button class="flex items-center gap-2 text-sm text-muted mb-4" style="cursor:pointer" onclick="window._teamView='main';renderDashContent()">${ICON.back} 杩斿洖</button>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px">鍒涘缓鍥㈤槦</h2>
       <form class="card p-5" style="max-width:400px" onsubmit="createTeam(event)">
-        <label class="label">团队名称</label>
-        <input id="team-name-inp" class="inp mb-4" placeholder="例如：产品设计组、运营团队…" required autofocus />
+        <label class="label">鍥㈤槦鍚嶇О</label>
+        <input id="team-name-inp" class="inp mb-4" placeholder="渚嬪锛氫骇鍝佽璁＄粍銆佽繍钀ュ洟闃熲€? required autofocus />
         <div class="flex gap-2">
-          <button id="create-team-btn" class="btn btn-brand flex-1" type="submit">确认创建</button>
-          <button class="btn btn-surface" type="button" onclick="window._teamView='main';renderDashContent()">取消</button>
+          <button id="create-team-btn" class="btn btn-brand flex-1" type="submit">纭鍒涘缓</button>
+          <button class="btn btn-surface" type="button" onclick="window._teamView='main';renderDashContent()">鍙栨秷</button>
         </div>
       </form>
     </div>`;
@@ -573,24 +415,24 @@ function renderTeamTab() {
     <div class="flex justify-between items-center mb-5 flex-wrap gap-2">
       <div>
         <h2 style="font-size:20px;font-weight:700">${team.name}</h2>
-        <p class="text-sm text-muted mt-1">${team.members?.length || 0} 名成员</p>
+        <p class="text-sm text-muted mt-1">${team.members?.length || 0} 鍚嶆垚鍛?/p>
       </div>
-      <span class="badge b-done">团队活跃中</span>
+      <span class="badge b-done">鍥㈤槦娲昏穬涓?/span>
     </div>
     <div class="card p-5 mb-4">
-      <h3 class="font-semibold text-sm mb-3">成员列表</h3>
+      <h3 class="font-semibold text-sm mb-3">鎴愬憳鍒楄〃</h3>
       <div class="space-y-3">
         ${(team.members||[]).map(m => `
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="av" style="${avBg(m.role)}">${nameAv(m.nickname)}</div>
             <div>
-              <p class="font-medium text-sm">${m.nickname || '用户'}</p>
+              <p class="font-medium text-sm">${m.nickname || '鐢ㄦ埛'}</p>
               <p class="text-xs text-muted">${phoneMask(m.phone)}</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <span class="badge ${m.role==='owner'?'b-owner':'b-member'}">${m.role==='owner'?'管理员':'成员'}</span>
+            <span class="badge ${m.role==='owner'?'b-owner':'b-member'}">${m.role==='owner'?'绠＄悊鍛?:'鎴愬憳'}</span>
             ${isOwner && m.role !== 'owner' ? `<button class="btn btn-xs btn-danger" onclick="removeMember('${m.email}')">${ICON.x}</button>` : ''}
           </div>
         </div>`).join('')}
@@ -598,11 +440,11 @@ function renderTeamTab() {
     </div>
     ${isOwner ? `
     <div class="card p-5">
-      <h3 class="font-semibold text-sm mb-3">邀请新成员</h3>
-      <p class="text-xs text-muted mb-3">仅可邀请已注册的用户（系统会自动校验）</p>
+      <h3 class="font-semibold text-sm mb-3">閭€璇锋柊鎴愬憳</h3>
+      <p class="text-xs text-muted mb-3">浠呭彲閭€璇峰凡娉ㄥ唽鐨勭敤鎴凤紙绯荤粺浼氳嚜鍔ㄦ牎楠岋級</p>
       <div class="flex gap-2 flex-wrap">
-        <input id="invite-phone" class="inp flex-1" style="min-width:160px" placeholder="输入对方邮箱地址" onkeydown="if(event.key==='Enter')inviteMember()" />
-        <button id="invite-btn" class="btn btn-brand btn-sm shrink-0" onclick="inviteMember()">邀请</button>
+        <input id="invite-phone" class="inp flex-1" style="min-width:160px" placeholder="杈撳叆瀵规柟閭鍦板潃" onkeydown="if(event.key==='Enter')inviteMember()" />
+        <button id="invite-btn" class="btn btn-brand btn-sm shrink-0" onclick="inviteMember()">閭€璇?/button>
       </div>
       <p id="invite-status" class="text-xs mt-2" style="min-height:18px"></p>
     </div>` : ''}
@@ -610,7 +452,7 @@ function renderTeamTab() {
 }
 
 // ============================================================
-// DASHBOARD — MEMBERS TAB
+// DASHBOARD 鈥?MEMBERS TAB
 // ============================================================
 async function addTeamTodo(e, phone) {
   e.preventDefault();
@@ -621,16 +463,16 @@ async function addTeamTodo(e, phone) {
   const team = myTeam();
   if (!team) return;
   const btn = document.getElementById(`ttodo-btn-${phone}`);
-  if (btn) { btn.disabled=true; btn.innerHTML=ICON.spin+'…'; }
+  if (btn) { btn.disabled=true; btn.innerHTML=ICON.spin+'鈥?; }
   try {
     const res = await API.teams.createTeamTodo(team._id, { title, priority: prioEl?.value||'medium', assigneePhone: phone });
     const idx = S.teams.findIndex(t=>t._id===team._id);
     if (idx>=0) S.teams[idx].todos = [res.todo, ...(S.teams[idx].todos||[])];
     titleEl.value = '';
     renderDashContent();
-    toast('任务已分配', 'success');
-  } catch(e) { toast(e.message || '分配失败', 'error'); }
-  if (btn) { btn.disabled=false; btn.innerHTML=ICON.plus+'分配'; }
+    toast('浠诲姟宸插垎閰?, 'success');
+  } catch(e) { toast(e.message || '鍒嗛厤澶辫触', 'error'); }
+  if (btn) { btn.disabled=false; btn.innerHTML=ICON.plus+'鍒嗛厤'; }
 }
 
 async function toggleTeamTodo(teamId, todoId, currentStatus) {
@@ -643,7 +485,7 @@ async function toggleTeamTodo(teamId, todoId, currentStatus) {
       if (t) t.status = next;
     }
     renderDashContent();
-  } catch(e) { toast(e.message || '操作失败', 'error'); }
+  } catch(e) { toast(e.message || '鎿嶄綔澶辫触', 'error'); }
 }
 
 async function deleteTeamTodo(teamId, todoId) {
@@ -652,14 +494,14 @@ async function deleteTeamTodo(teamId, todoId) {
     const idx = S.teams.findIndex(t=>t._id===teamId);
     if (idx>=0) S.teams[idx].todos = (S.teams[idx].todos||[]).filter(x=>x._id!==todoId);
     renderDashContent();
-    toast('已删除', 'success');
-  } catch(e) { toast(e.message || '删除失败', 'error'); }
+    toast('宸插垹闄?, 'success');
+  } catch(e) { toast(e.message || '鍒犻櫎澶辫触', 'error'); }
 }
 
 function renderMembersTab() {
   const team = myTeam();
   if (!team) {
-    return `<div class="card p-6 text-center text-muted text-sm">请先加入或创建团队</div>`;
+    return `<div class="card p-6 text-center text-muted text-sm">璇峰厛鍔犲叆鎴栧垱寤哄洟闃?/div>`;
   }
   const isOwner = myRole(team) === 'owner';
   const members = team.members || [];
@@ -669,8 +511,8 @@ function renderMembersTab() {
   <div>
     <div class="flex justify-between items-center mb-5 flex-wrap gap-2">
       <div>
-        <h2 style="font-size:20px;font-weight:700">成员任务</h2>
-        <p class="text-sm text-muted mt-1">${team.name} · ${members.length} 名成员</p>
+        <h2 style="font-size:20px;font-weight:700">鎴愬憳浠诲姟</h2>
+        <p class="text-sm text-muted mt-1">${team.name} 路 ${members.length} 鍚嶆垚鍛?/p>
       </div>
     </div>
     <div class="space-y-4">
@@ -683,24 +525,24 @@ function renderMembersTab() {
             <div class="flex items-center gap-3">
               <div class="av" style="${avBg(m.role)}">${nameAv(m.nickname)}</div>
               <div>
-                <p class="font-medium text-sm">${m.nickname || '用户'}</p>
-                <p class="text-xs text-muted">${phoneMask(m.phone)} · ${m.role==='owner'?'管理员':'成员'}</p>
+                <p class="font-medium text-sm">${m.nickname || '鐢ㄦ埛'}</p>
+                <p class="text-xs text-muted">${phoneMask(m.phone)} 路 ${m.role==='owner'?'绠＄悊鍛?:'鎴愬憳'}</p>
               </div>
             </div>
-            <span class="badge b-todo">${memberTodos.length} 项任务</span>
+            <span class="badge b-todo">${memberTodos.length} 椤逛换鍔?/span>
           </div>
           ${isOwner ? `
           <form onsubmit="addTeamTodo(event,'${m.phone}')" class="flex gap-2 mb-3 flex-wrap">
-            <input id="ttodo-${m.phone}" class="inp flex-1" style="min-width:140px;font-size:13px" placeholder="分配新任务…" required />
+            <input id="ttodo-${m.phone}" class="inp flex-1" style="min-width:140px;font-size:13px" placeholder="鍒嗛厤鏂颁换鍔♀€? required />
             <select id="tprio-${m.phone}" class="inp" style="width:80px;font-size:13px">
-              <option value="high">紧急</option>
-              <option value="medium" selected>中</option>
-              <option value="low">低</option>
+              <option value="high">绱ф€?/option>
+              <option value="medium" selected>涓?/option>
+              <option value="low">浣?/option>
             </select>
-            <button id="ttodo-btn-${m.phone}" class="btn btn-brand btn-sm shrink-0" type="submit">${ICON.plus}分配</button>
+            <button id="ttodo-btn-${m.phone}" class="btn btn-brand btn-sm shrink-0" type="submit">${ICON.plus}鍒嗛厤</button>
           </form>` : ''}
           <div class="space-y-2">
-            ${memberTodos.length === 0 ? `<p class="text-xs text-muted">暂无分配任务</p>` :
+            ${memberTodos.length === 0 ? `<p class="text-xs text-muted">鏆傛棤鍒嗛厤浠诲姟</p>` :
               memberTodos.map(t => `
               <div class="trow ${t.status==='done'?'done':''}">
                 <button class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="toggleTeamTodo('${team._id}','${t._id}','${t.status}')">
@@ -735,23 +577,23 @@ function renderDashContent() {
 function renderDashboard() {
   const u = S.user;
   const tabs = [
-    { id:'todos', label:'我的待办', icon: ICON.todo },
-    { id:'team',  label:'我的团队', icon: ICON.team },
-    { id:'members', label:'成员任务', icon: ICON.grid }];
+    { id:'todos', label:'鎴戠殑寰呭姙', icon: ICON.todo },
+    { id:'team',  label:'鎴戠殑鍥㈤槦', icon: ICON.team },
+    { id:'members', label:'鎴愬憳浠诲姟', icon: ICON.grid }];
   return `
   <div class="page">
     <nav class="topnav">
       <div class="ctr flex justify-between items-center" style="height:56px">
         <div class="logo">
-          <div class="logo-icon" style="width:30px;height:30px;font-size:13px">待</div>
-          <span class="logo-text">待会<span style="color:var(--brand)">·</span>就办</span>
+          <div class="logo-icon" style="width:30px;height:30px;font-size:13px">寰?/div>
+          <span class="logo-text">寰呬細<span style="color:var(--brand)">路</span>灏卞姙</span>
         </div>
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-2">
             <div class="av av-sm" style="${avBg('member')}">${nameAv(u?.nickname||u?.name||'?')}</div>
-            <span class="text-sm font-medium hidden-xs">${u?.nickname||u?.name||'用户'}</span>
+            <span class="text-sm font-medium hidden-xs">${u?.nickname||u?.name||'鐢ㄦ埛'}</span>
           </div>
-          <button class="btn btn-xs btn-surface" onclick="handleLogout()" title="退出登录">${ICON.logout}</button>
+          <button class="btn btn-xs btn-surface" onclick="handleLogout()" title="閫€鍑虹櫥褰?>${ICON.logout}</button>
         </div>
       </div>
     </nav>
@@ -765,7 +607,7 @@ function renderDashboard() {
         </nav>
       </aside>
       <main class="dash-main">
-        ${S.loading ? `<div class="flex items-center justify-center" style="height:200px;color:var(--t2)">${ICON.spin} <span class="ml-2">加载中…</span></div>` : ''}
+        ${S.loading ? `<div class="flex items-center justify-center" style="height:200px;color:var(--t2)">${ICON.spin} <span class="ml-2">鍔犺浇涓€?/span></div>` : ''}
         <div id="dash-content"></div>
       </main>
     </div>
@@ -924,6 +766,81 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 `;
 }
 
+// ============================================================
+// DASHBOARD SHELL + RENDER
+// ============================================================
+function renderDashContent() {
+  const el = document.getElementById('dash-content');
+  if (!el) return;
+  if (S.dashTab === 'todos') el.innerHTML = renderTodosTab();
+  else if (S.dashTab === 'team') el.innerHTML = renderTeamTab();
+  else if (S.dashTab === 'members') el.innerHTML = renderMembersTab();
+}
+
+function renderDashboard() {
+  const u = S.user;
+  const tabs = [
+    { id:'todos', label:'我的待办', icon: ICON.todo },
+    { id:'team',  label:'我的团队', icon: ICON.team },
+    { id:'members', label:'成员任务', icon: ICON.grid }];
+  return `
+  <div class="page">
+    <nav class="topnav">
+      <div class="ctr flex justify-between items-center" style="height:56px">
+        <div class="logo">
+          <div class="logo-icon" style="width:30px;height:30px;font-size:13px">待</div>
+          <span class="logo-text">待会<span style="color:var(--brand)">·</span>就办</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <div class="av av-sm" style="${avBg('member')}">${nameAv(u?.nickname||u?.name||'?')}</div>
+            <span class="text-sm font-medium hidden-xs">${u?.nickname||u?.name||'用户'}</span>
+          </div>
+          <button class="btn btn-xs btn-surface" onclick="handleLogout()" title="退出登录">${ICON.logout}</button>
+        </div>
+      </div>
+    </nav>
+    <div class="dash-wrap">
+      <aside class="dash-side">
+        <nav class="side-nav">
+          ${tabs.map(t=>`
+          <button class="side-btn ${S.dashTab===t.id?'active':''}" onclick="S.dashTab='${t.id}';renderDashContent();updateSideNav()">
+            ${t.icon}<span>${t.label}</span>
+          </button>`).join('')}
+        </nav>
+      </aside>
+      <main class="dash-main">
+        ${S.loading ? `<div class="flex items-center justify-center" style="height:200px;color:var(--t2)">${ICON.spin} <span class="ml-2">加载中…</span></div>` : ''}
+        <div id="dash-content"></div>
+      </main>
+    </div>
+  </div>`;
+}
+
+function updateSideNav() {
+  document.querySelectorAll('.side-btn').forEach((btn, i) => {
+    const tabs = ['todos','team','members'];
+    btn.classList.toggle('active', S.dashTab === tabs[i]);
+  });
+}
+
+function handleLogout() {
+  API.auth.logout();
+  S.user = null; S.todos = []; S.teams = [];
+  S.page = 'home';
+  render();
+}
+
+function render() {
+  injectStyles();
+  const app = document.getElementById('app');
+  if (!app) return;
+  if (S.page === 'home') app.innerHTML = renderHome();
+  else if (S.page === 'login') { loginState.step = loginState.step || 'form'; app.innerHTML = renderLogin(); }
+  else if (S.page === 'dashboard') { app.innerHTML = renderDashboard(); if (!S.loading) renderDashContent(); }
+  const tc = document.getElementById('toast-c');
+  if (tc) tc.id = 'toastc';
+}
 // ============================================================
 // INIT
 // ============================================================
