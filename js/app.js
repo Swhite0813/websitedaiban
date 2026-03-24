@@ -323,13 +323,10 @@ function renderLogin() {
 function renderLoginPhone() {
   return `
     <h2 style="font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;margin-bottom:6px">登录 / 注册</h2>
-    <p class="text-sm text-muted mb-4">手机号验证，30 秒搞定</p>
-    <label class="label">手机号</label>
-    <div class="flex mb-3" style="gap:0">
-      <div style="padding:10px 12px;background:var(--s2);border:1.5px solid var(--border);border-right:none;border-radius:8px 0 0 8px;font-size:14px;color:var(--t2);flex-shrink:0">🇨🇳 +86</div>
-      <input id="email-inp" type="email" placeholder="请输入您的邮箱地址" class="inp mb-3" onkeydown="if(event.key==='Enter')sendCode()" />
-    </div>
-    <p id="phone-err" class="text-xs mb-3" style="color:var(--red);min-height:18px"></p>
+    <p class="text-sm text-muted mb-4">邮箱验证，30 秒搞定</p>
+    <label class="label">邮箱地址</label>
+    <input id="email-inp" type="email" placeholder="请输入您的邮箱地址" class="inp mb-3" onkeydown="if(event.key==='Enter')sendCode()" />
+    <p id="email-err" class="text-xs mb-3" style="color:var(--red);min-height:18px"></p>
     <button id="send-btn" class="btn btn-brand w-full" onclick="sendCode()">获取验证码</button>
     <p class="text-xs text-center mt-4 text-muted">登录即同意 <a href="#" style="color:var(--brand)">服务条款</a> 和 <a href="#" style="color:var(--brand)">隐私政策</a></p>
   `;
