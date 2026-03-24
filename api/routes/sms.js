@@ -53,7 +53,15 @@ router.post('/send-code', async (req, res) => {
     }
 
     const code = generateCode();
-    await User.storeVerificationCode(email, code);
+
+    try {
+      await User.storeVerificationCode(email, code);
+    } catch (dbErr) {
+      console.error('存储验证码到DB失败:', dbErr.message);
+      // DB失败时回退到内存存储
+      const memCodes = global._verificationCodes || (global._verificationCodes = new Map());
+      memCodes.set(email.toLowerCase(), { code, expiresAt: Date.now() + 5 * 60 * 1000 });
+    }
 
     if (RESEND_API_KEY) {
       try {
@@ -69,8 +77,8 @@ router.post('/send-code', async (req, res) => {
       res.json({ success: true, message: '验证码已发送', code });
     }
   } catch (error) {
-    console.error('发送验证码失败:', error);
-    res.status(500).json({ error: '发送验证码失败，请稍后重试' });
+    console.error('发送验证码失败:', error.message, error.stack);
+    res.status(500).json({ error: '发送验证码失败：' + error.message });
   }
 });
 

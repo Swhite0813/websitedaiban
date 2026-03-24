@@ -14,7 +14,17 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: '邮箱和验证码不能为空' });
     }
 
-    const isValid = await User.verifyCode(email, code);
+    const isValid = await User.verifyCode(email, code).catch(() => {
+      // DB失败时回退到内存
+      const memCodes = global._verificationCodes;
+      if (!memCodes) return false;
+      const record = memCodes.get(email.toLowerCase());
+      if (!record) return false;
+      if (Date.now() > record.expiresAt) { memCodes.delete(email.toLowerCase()); return false; }
+      const ok = record.code === code;
+      if (ok) memCodes.delete(email.toLowerCase());
+      return ok;
+    });
     if (!isValid) {
       return res.status(400).json({ error: '验证码错误或已过期' });
     }
