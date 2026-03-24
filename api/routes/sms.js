@@ -45,8 +45,8 @@ router.post('/send-code', async (req, res) => {
     res.json({ 
       success: true, 
       message: '验证码已发送',
-      // 开发环境下返回验证码（生产环境请删除）
-      ...(process.env.NODE_ENV !== 'production' && { code })
+      // 未配置短信服务时返回验证码供演示使用
+      ...(!ALIYUN_ACCESS_KEY_ID && { code })
     });
   } catch (error) {
     console.error('发送验证码失败:', error);
