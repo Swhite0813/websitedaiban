@@ -6,9 +6,10 @@ const memberSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  phone: {
+  email: {
     type: String,
-    required: true
+    required: true,
+    lowercase: true
   },
   nickname: {
     type: String,

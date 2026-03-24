@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  phone: {
+  email: {
     type: String,
     required: true,
     unique: true,
-    index: true
+    index: true,
+    lowercase: true,
+    trim: true
   },
   nickname: {
     type: String,
@@ -30,27 +31,26 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// 验证码临时存储（生产环境建议使用Redis）
+// 验证码临时存储
 const verificationCodes = new Map();
 
-userSchema.statics.storeVerificationCode = function(phone, code) {
-  verificationCodes.set(phone, {
+userSchema.statics.storeVerificationCode = function(email, code) {
+  verificationCodes.set(email.toLowerCase(), {
     code,
-    expiresAt: Date.now() + 5 * 60 * 1000 // 5分钟过期
+    expiresAt: Date.now() + 5 * 60 * 1000
   });
 };
 
-userSchema.statics.verifyCode = function(phone, code) {
-  const record = verificationCodes.get(phone);
+userSchema.statics.verifyCode = function(email, code) {
+  const key = email.toLowerCase();
+  const record = verificationCodes.get(key);
   if (!record) return false;
   if (Date.now() > record.expiresAt) {
-    verificationCodes.delete(phone);
+    verificationCodes.delete(key);
     return false;
   }
   const isValid = record.code === code;
-  if (isValid) {
-    verificationCodes.delete(phone);
-  }
+  if (isValid) verificationCodes.delete(key);
   return isValid;
 };
 

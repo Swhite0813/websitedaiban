@@ -203,7 +203,7 @@ function renderHome() {
 // ============================================================
 // PAGE: LOGIN
 // ============================================================
-let loginState = { step: 'phone', phone: '', otp: ['','','','','',''], countdown: 0, loading: false, error: '', otpError: '', devCode: '' };
+let loginState = { step: 'email', email: '', otp: ['','','','','',''], countdown: 0, loading: false, error: '', otpError: '', devCode: '' };
 let countdownTimer = null;
 
 function startCountdown() {
@@ -218,19 +218,19 @@ function startCountdown() {
 }
 
 async function sendCode() {
-  const phone = document.getElementById('phone-inp')?.value?.replace(/\D/g,'') || '';
-  if (!/^1[3-9]\d{9}$/.test(phone)) {
-    loginState.error = '请输入正确的 11 位手机号';
-    document.getElementById('phone-err').textContent = loginState.error;
+  const email = document.getElementById('email-inp')?.value?.trim() || '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    loginState.error = '请输入正确的邮箱地址';
+    document.getElementById('email-err').textContent = loginState.error;
     return;
   }
   loginState.loading = true;
   loginState.error = '';
-  loginState.phone = phone;
+  loginState.email = email;
   document.getElementById('send-btn').disabled = true;
   document.getElementById('send-btn').innerHTML = ICON.spin + '发送中…';
   try {
-    const res = await API.auth.sendCode(phone);
+    const res = await API.auth.sendCode(email);
     loginState.devCode = res.code || '';
     loginState.step = 'otp';
     render();
@@ -240,7 +240,7 @@ async function sendCode() {
     }, 50);
   } catch(e) {
     loginState.error = e.message || '发送失败，请稍后重试';
-    document.getElementById('phone-err').textContent = loginState.error;
+    document.getElementById('email-err').textContent = loginState.error;
     document.getElementById('send-btn').disabled = false;
     document.getElementById('send-btn').innerHTML = '获取验证码';
   }
@@ -254,7 +254,7 @@ async function verifyOtp() {
   document.getElementById('otp-btn').disabled = true;
   document.getElementById('otp-btn').innerHTML = ICON.spin + '验证中…';
   try {
-    const res = await API.auth.login(loginState.phone, code);
+    const res = await API.auth.login(loginState.email, code);
     S.user = res.user;
     loginState.step = 'success';
     render();
@@ -313,7 +313,7 @@ function renderLogin() {
         </div>
       </div>
       <div class="card-brand p-6">
-        ${step === 'phone' ? renderLoginPhone() : step === 'otp' ? renderLoginOtp(phone, devCode) : renderLoginSuccess()}
+        ${step === 'email' ? renderLoginPhone() : step === 'otp' ? renderLoginOtp(email, devCode) : renderLoginSuccess()}
       </div>
       ${step !== 'success' ? `<p class="text-center text-sm text-muted mt-4"><button class="nav-btn" onclick="navigate('home')">← 返回首页</button></p>` : ''}
     </div>
@@ -327,7 +327,7 @@ function renderLoginPhone() {
     <label class="label">手机号</label>
     <div class="flex mb-3" style="gap:0">
       <div style="padding:10px 12px;background:var(--s2);border:1.5px solid var(--border);border-right:none;border-radius:8px 0 0 8px;font-size:14px;color:var(--t2);flex-shrink:0">🇨🇳 +86</div>
-      <input id="phone-inp" type="tel" maxlength="11" placeholder="请输入 11 位手机号" class="inp" style="border-radius:0 8px 8px 0;border-left:none" onkeydown="if(event.key==='Enter')sendCode()" oninput="this.value=this.value.replace(/\\D/g,'')" />
+      <input id="email-inp" type="email" placeholder="请输入您的邮箱地址" class="inp mb-3" onkeydown="if(event.key==='Enter')sendCode()" />
     </div>
     <p id="phone-err" class="text-xs mb-3" style="color:var(--red);min-height:18px"></p>
     <button id="send-btn" class="btn btn-brand w-full" onclick="sendCode()">获取验证码</button>
@@ -335,11 +335,11 @@ function renderLoginPhone() {
   `;
 }
 
-function renderLoginOtp(phone, devCode) {
+function renderLoginOtp(email, devCode) {
   return `
-    <button class="flex items-center gap-2 text-sm text-muted mb-4" style="cursor:pointer" onclick="loginState.step='phone';render()">← 返回</button>
+    <button class="flex items-center gap-2 text-sm text-muted mb-4" style="cursor:pointer" onclick="loginState.step='email';render()">← 返回</button>
     <h2 style="font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;margin-bottom:6px">输入验证码</h2>
-    <p class="text-sm text-muted mb-4">已发送至 <strong>${phone.replace(/(\d{3})(\d{4})(\d{4})/,'$1 $2 $3')}</strong></p>
+    <p class="text-sm text-muted mb-4">已发送至 <strong>${email}</strong></p>
     ${devCode ? `<div class="flex items-center gap-2 p-4 rounded mb-4" style="background:var(--bl);border:1px solid var(--bb);font-size:13px"><span style="color:var(--brand)">💡 演示验证码：<strong>${devCode}</strong></span></div>` : ''}
     <label class="label">6 位验证码</label>
     <div class="otp-wrap mb-2" onpaste="otpPaste(event)">
@@ -490,8 +490,8 @@ async function createTeam(e) {
 
 async function inviteMember() {
   const inp = document.getElementById('invite-phone');
-  const phone = inp?.value?.replace(/\D/g,'');
-  if (!/^1[3-9]\d{9}$/.test(phone)) { toast('请输入正确的手机号', 'error'); return; }
+  const phone = inp?.value?.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phone)) { toast('请输入正确的邮箱地址', 'error'); return; }
   const team = myTeam();
   if (!team) return;
   const btn = document.getElementById('invite-btn');
@@ -501,7 +501,7 @@ async function inviteMember() {
     // Check phone registered first
     const check = await API.teams.checkPhone(phone);
     if (!check.exists) {
-      if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">该手机号尚未注册，请对方先注册后再邀请</span>`;
+      if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">该邮箱尚未注册，请对方先注册后再邀请</span>`;
       btn.disabled = false; btn.innerHTML = '邀请';
       return;
     }
@@ -594,7 +594,7 @@ function renderTeamTab() {
           </div>
           <div class="flex items-center gap-2">
             <span class="badge ${m.role==='owner'?'b-owner':'b-member'}">${m.role==='owner'?'管理员':'成员'}</span>
-            ${isOwner && m.role !== 'owner' ? `<button class="btn btn-xs btn-danger" onclick="removeMember('${m.phone}')">${ICON.x}</button>` : ''}
+            ${isOwner && m.role !== 'owner' ? `<button class="btn btn-xs btn-danger" onclick="removeMember('${m.email}')">${ICON.x}</button>` : ''}
           </div>
         </div>`).join('')}
       </div>
@@ -604,7 +604,7 @@ function renderTeamTab() {
       <h3 class="font-semibold text-sm mb-3">邀请新成员</h3>
       <p class="text-xs text-muted mb-3">仅可邀请已注册的用户（系统会自动校验）</p>
       <div class="flex gap-2 flex-wrap">
-        <input id="invite-phone" class="inp flex-1" style="min-width:160px" placeholder="输入对方手机号" maxlength="11" oninput="this.value=this.value.replace(/\\D/g,'')" onkeydown="if(event.key==='Enter')inviteMember()" />
+        <input id="invite-phone" class="inp flex-1" style="min-width:160px" placeholder="输入对方邮箱地址" onkeydown="if(event.key==='Enter')inviteMember()" />
         <button id="invite-btn" class="btn btn-brand btn-sm shrink-0" onclick="inviteMember()">邀请</button>
       </div>
       <p id="invite-status" class="text-xs mt-2" style="min-height:18px"></p>

@@ -49,10 +49,10 @@ async function apiRequest(endpoint, options = {}) {
 
 // 认证相关API
 const authAPI = {
-  sendCode: (phone) => apiRequest('/sms/send-code', { method: 'POST', body: { phone } }),
+  sendCode: (email) => apiRequest('/sms/send-code', { method: 'POST', body: { email } }),
 
-  login: async (phone, code) => {
-    const data = await apiRequest('/auth/login', { method: 'POST', body: { phone, code } });
+  login: async (email, code) => {
+    const data = await apiRequest('/auth/login', { method: 'POST', body: { email, code } });
     if (data.token) {
       storage.setToken(data.token);
       storage.setUser(data.user);
@@ -87,17 +87,13 @@ const todoAPI = {
 const teamAPI = {
   getAll: () => apiRequest('/teams'),
   create: (name) => apiRequest('/teams', { method: 'POST', body: { name } }),
-
-  // 邀请前校验手机号是否已注册
-  checkPhone: (phone) => apiRequest(`/teams/check-phone/${phone}`),
-
-  // 邀请成员（后端会再次校验手机号）
-  invite: (teamId, phone) => apiRequest(`/teams/${teamId}/invite`, { method: 'POST', body: { phone } }),
-
-  removeMember: (teamId, phone) => apiRequest(`/teams/${teamId}/members/${phone}`, { method: 'DELETE' }),
-
+  checkPhone: (email) => apiRequest(`/teams/check-phone/${encodeURIComponent(email)}`),
+  invite: (teamId, email) => apiRequest(`/teams/${teamId}/invite`, { method: 'POST', body: { phone: email } }),
+  removeMember: (teamId, email) => apiRequest(`/teams/${teamId}/members/${encodeURIComponent(email)}`, { method: 'DELETE' }),
   getTeamTodos: (teamId) => apiRequest(`/teams/${teamId}/todos`),
-  createTeamTodo: (teamId, data) => apiRequest(`/teams/${teamId}/todos`, { method: 'POST', body: data })
+  createTeamTodo: (teamId, data) => apiRequest(`/teams/${teamId}/todos`, { method: 'POST', body: data }),
+  updateTeamTodo: (teamId, todoId, data) => apiRequest(`/teams/${teamId}/todos/${todoId}`, { method: 'PUT', body: data }),
+  deleteTeamTodo: (teamId, todoId) => apiRequest(`/teams/${teamId}/todos/${todoId}`, { method: 'DELETE' })
 };
 
 // 导出

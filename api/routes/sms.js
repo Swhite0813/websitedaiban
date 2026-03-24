@@ -1,65 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const https = require('https');
-const crypto = require('crypto');
 const User = require('../models/User');
 
-// 腾讯云短信配置
-const TENCENT_SECRET_ID = process.env.TENCENT_SECRET_ID;
-const TENCENT_SECRET_KEY = process.env.TENCENT_SECRET_KEY;
-const TENCENT_SMS_APP_ID = process.env.TENCENT_SMS_APP_ID;
-const TENCENT_SMS_SIGN = process.env.TENCENT_SMS_SIGN;
-const TENCENT_SMS_TEMPLATE_ID = process.env.TENCENT_SMS_TEMPLATE_ID;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
 
-// 生成随机验证码
 function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// 腾讯云短信发送
-async function sendTencentSMS(phone, code) {
-  const host = 'sms.tencentcloudapi.com';
-  const service = 'sms';
-  const version = '2021-01-11';
-  const action = 'SendSms';
-  const region = 'ap-guangzhou';
-  const timestamp = Math.floor(Date.now() / 1000);
-  const date = new Date(timestamp * 1000).toISOString().slice(0, 10);
-
-  const payload = JSON.stringify({
-    PhoneNumberSet: [`+86${phone}`],
-    SmsSdkAppId: TENCENT_SMS_APP_ID,
-    SignName: TENCENT_SMS_SIGN,
-    TemplateId: TENCENT_SMS_TEMPLATE_ID,
-    TemplateParamSet: [code]
+async function sendEmailResend(to, code) {
+  const body = JSON.stringify({
+    from: FROM_EMAIL,
+    to: [to],
+    subject: '【待会·就办】您的登录验证码',
+    html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f8f9fc;border-radius:12px"><h2 style="color:#3D5AFE;margin-bottom:8px">待会·就办</h2><p style="color:#555;margin-bottom:24px">您好，您的登录验证码为：</p><div style="font-size:36px;font-weight:900;letter-spacing:8px;color:#0F1117;text-align:center;padding:20px;background:#fff;border-radius:8px;border:2px solid #c7d2fe;margin-bottom:24px">${code}</div><p style="color:#888;font-size:13px">验证码 5 分钟内有效，请勿泄露给他人。</p></div>`
   });
-
-  const hashedPayload = crypto.createHash('sha256').update(payload).digest('hex');
-  const canonicalRequest = `POST\n/\n\ncontent-type:application/json\nhost:${host}\n\ncontent-type;host\n${hashedPayload}`;
-  const credentialScope = `${date}/${service}/tc3_request`;
-  const hashedCanonicalRequest = crypto.createHash('sha256').update(canonicalRequest).digest('hex');
-  const stringToSign = `TC3-HMAC-SHA256\n${timestamp}\n${credentialScope}\n${hashedCanonicalRequest}`;
-
-  const secretDate = crypto.createHmac('sha256', `TC3${TENCENT_SECRET_KEY}`).update(date).digest();
-  const secretService = crypto.createHmac('sha256', secretDate).update(service).digest();
-  const secretSigning = crypto.createHmac('sha256', secretService).update('tc3_request').digest();
-  const signature = crypto.createHmac('sha256', secretSigning).update(stringToSign).digest('hex');
-
-  const authorization = `TC3-HMAC-SHA256 Credential=${TENCENT_SECRET_ID}/${credentialScope}, SignedHeaders=content-type;host, Signature=${signature}`;
 
   return new Promise((resolve, reject) => {
     const options = {
-      hostname: host,
-      path: '/',
+      hostname: 'api.resend.com',
+      path: '/emails',
       method: 'POST',
       headers: {
-        'Authorization': authorization,
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
-        'Host': host,
-        'X-TC-Action': action,
-        'X-TC-Timestamp': timestamp.toString(),
-        'X-TC-Version': version,
-        'X-TC-Region': region
+        'Content-Length': Buffer.byteLength(body)
       }
     };
     const req = https.request(options, (res) => {
@@ -67,47 +34,38 @@ async function sendTencentSMS(phone, code) {
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         const result = JSON.parse(data);
-        if (result.Response && result.Response.Error) {
-          reject(new Error(result.Response.Error.Message));
-        } else {
-          resolve(result);
-        }
+        if (res.statusCode >= 400) reject(new Error(result.message || '邮件发送失败'));
+        else resolve(result);
       });
     });
     req.on('error', reject);
-    req.write(payload);
+    req.write(body);
     req.end();
   });
 }
 
-// 发送短信验证码
+// 发送验证码
 router.post('/send-code', async (req, res) => {
   try {
-    const { phone } = req.body;
-
-    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
-      return res.status(400).json({ error: '手机号格式不正确' });
+    const { email } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: '邮箱格式不正确' });
     }
 
     const code = generateCode();
+    User.storeVerificationCode(email, code);
 
-    // 存储验证码
-    User.storeVerificationCode(phone, code);
-
-    // 检查是否有腾讯云配置
-    if (TENCENT_SECRET_ID && TENCENT_SECRET_KEY && TENCENT_SMS_APP_ID) {
+    if (RESEND_API_KEY) {
       try {
-        await sendTencentSMS(phone, code);
-        console.log(`已向 ${phone} 发送验证码`);
-        res.json({ success: true, message: '验证码已发送至您的手机' });
-      } catch (smsErr) {
-        console.error('短信发送失败:', smsErr.message);
-        // 短信失败时仍返回验证码（降级处理）
-        res.json({ success: true, message: '短信发送失败，演示验证码：', code });
+        await sendEmailResend(email.toLowerCase(), code);
+        console.log(`验证码已发送至 ${email}`);
+        res.json({ success: true, message: '验证码已发送至您的邮箱' });
+      } catch (err) {
+        console.error('邮件发送失败:', err.message);
+        res.json({ success: true, message: '邮件发送失败，演示验证码：', code });
       }
     } else {
-      // 未配置短信服务，返回演示验证码
-      console.log(`演示验证码 - 手机号: ${phone}, 验证码: ${code}`);
+      console.log(`[演示] 邮箱: ${email}, 验证码: ${code}`);
       res.json({ success: true, message: '验证码已发送', code });
     }
   } catch (error) {
