@@ -14,34 +14,38 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: '邮箱和验证码不能为空' });
     }
 
-    const isValid = await User.verifyCode(email, code).catch(() => {
-      // DB失败时回退到内存
+    // 验证码校验（支持DB和内存回退）
+    let isValid = false;
+    try {
+      isValid = await User.verifyCode(email, code);
+      console.log(`DB验证码校验: email=${email}, isValid=${isValid}`);
+    } catch (dbErr) {
+      console.error('DB验证码校验失败，回退内存:', dbErr.message);
       const memCodes = global._verificationCodes;
-      if (!memCodes) return false;
-      const record = memCodes.get(email.toLowerCase());
-      if (!record) return false;
-      if (Date.now() > record.expiresAt) { memCodes.delete(email.toLowerCase()); return false; }
-      const ok = record.code === code;
-      if (ok) memCodes.delete(email.toLowerCase());
-      return ok;
-    });
+      if (memCodes) {
+        const record = memCodes.get(email.toLowerCase());
+        if (record && Date.now() <= record.expiresAt && record.code === code) {
+          isValid = true;
+          memCodes.delete(email.toLowerCase());
+        }
+      }
+    }
+
     if (!isValid) {
       return res.status(400).json({ error: '验证码错误或已过期' });
     }
 
+    // 查找或创建用户
     let user = await User.findOne({ email: email.toLowerCase() });
-
     if (!user) {
       const namePart = email.split('@')[0].slice(0, 8);
-      user = new User({
+      user = await User.create({
         email: email.toLowerCase(),
-        nickname: `用户${namePart}`,
+        nickname: '用户' + namePart,
         isVerified: true
       });
-      await user.save();
     } else {
-      user.lastLoginAt = new Date();
-      await user.save();
+      await User.updateOne({ _id: user._id }, { lastLoginAt: new Date() });
     }
 
     const token = jwt.sign(
@@ -61,8 +65,8 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('登录失败:', error);
-    res.status(500).json({ error: '登录失败' });
+    console.error('登录失败详情:', error.message, error.stack);
+    res.status(500).json({ error: '登录失败: ' + error.message });
   }
 });
 
