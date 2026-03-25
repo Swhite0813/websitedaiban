@@ -485,9 +485,24 @@ function renderTeamTodos() {
   const isOwner = team.owner?.toString()===S.user?.id || team.ownerId?.toString()===S.user?.id;
   return `
   <div>
-    <div class="flex items-center gap-2 mb-1">
+     <div class="flex items-center gap-2 mb-1">
       <button class="btn btn-surface btn-xs" onclick="switchTab('myteams')">${ICON.back} 返回</button>
       <h2 style="font-size:20px;flex:1">${team.name}</h2>
+      <div style="position:relative;display:flex;align-items:center" class="av-group">
+        ${(()=>{
+          const members = team.members||[];
+          const show = members.slice(0,4);
+          const extra = members.length - 4;
+          const avatars = show.map((m,i)=>{
+            const nm = m.nickname||m.username||m.email||'?';
+            const av = (nm).slice(-2,-1)||(nm)[0]||'?';
+            return `<div class="av" style="width:30px;height:30px;font-size:12px;margin-left:${i===0?'0':'-8px'};background:linear-gradient(135deg,#3D5AFE,#7C3AED);color:#fff;border:2px solid var(--surface);z-index:${10-i};position:relative" title="${nm}">${av}</div>`;
+          }).join('');
+          const extraEl = extra>0?`<div class="av" style="width:30px;height:30px;font-size:11px;margin-left:-8px;background:var(--s2);color:var(--t2);border:2px solid var(--surface);z-index:6;position:relative">···</div>`:'';
+          const tooltip = members.map(m=>m.nickname||m.username||m.email||'?').join('、');
+          return `<div style="display:flex;align-items:center;cursor:default" title="${tooltip}">${avatars}${extraEl}</div>`;
+        })()}
+      </div>
     </div>
     <p class="text-xs text-muted mb-3">${(team.members||[]).length} 位成员 · ${todos.length} 项任务</p>
     ${assignees.length>0 ? `
