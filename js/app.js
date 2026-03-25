@@ -1,3 +1,4 @@
+﻿// v3.0-auth
 // ============================================================
 // 待会·就办 — Main App (Vanilla JS SPA)
 // Connects to real backend via window.API (js/api.js)
