@@ -1,5 +1,14 @@
 // API服务配置
-const API_BASE_URL = window.location.hostname === 'localhost'
+const hostname = window.location.hostname;
+const protocol = window.location.protocol;
+const isFileProtocol = protocol === 'file:';
+const isLocalhost =
+  isFileProtocol ||
+  hostname === 'localhost' ||
+  hostname === '127.0.0.1' ||
+  hostname === '::1';
+
+const API_BASE_URL = isLocalhost
   ? 'http://localhost:3001/api'
   : 'https://daihui-api-237979-9-1415563523.sh.run.tcloudbase.com/api';
 
@@ -36,8 +45,19 @@ async function apiRequest(endpoint, options = {}) {
     config.body = JSON.stringify(config.body);
   }
 
-  const response = await fetch(url, config);
-  const data = await response.json();
+  let response;
+  try {
+    response = await fetch(url, config);
+  } catch (e) {
+    // 把实际请求 URL 也带出来，便于你在控制台/界面里快速定位是哪个后端不可达
+    throw new Error(`Failed to fetch ${url}: ${e?.message || e}`);
+  }
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    data = { error: `Invalid JSON response from ${url}` };
+  }
 
   if (!response.ok) {
     const err = new Error(data.error || '请求失败');
