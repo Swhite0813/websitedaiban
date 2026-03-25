@@ -102,6 +102,38 @@ router.post('/:teamId/invite', auth, async (req, res) => {
   }
 });
 
+// 解散团队（仅管理员）
+router.delete('/:teamId', auth, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.teamId);
+    if (!team) return res.status(404).json({ error: '团队不存在' });
+    if (team.ownerId.toString() !== req.userId.toString()) {
+      return res.status(403).json({ error: '只有管理员可以解散团队' });
+    }
+    await Team.findByIdAndDelete(req.params.teamId);
+    await Todo.deleteMany({ teamId: req.params.teamId });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: '解散团队失败' });
+  }
+});
+
+// 退出团队（成员）
+router.post('/:teamId/leave', auth, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.teamId);
+    if (!team) return res.status(404).json({ error: '团队不存在' });
+    const member = team.members.find(m => m.userId.toString() === req.userId.toString());
+    if (!member) return res.status(404).json({ error: '你不在该团队中' });
+    if (member.role === 'owner') return res.status(400).json({ error: '管理员不能退出，请解散团队' });
+    team.members = team.members.filter(m => m.userId.toString() !== req.userId.toString());
+    await team.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: '退出团队失败' });
+  }
+});
+
 // 移除成员
 router.delete('/:teamId/members/:phone', auth, async (req, res) => {
   try {
