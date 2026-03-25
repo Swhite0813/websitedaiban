@@ -416,7 +416,11 @@ function renderTodos() {
           ${t.description?`<p class="text-xs text-muted truncate mt-1">${t.description}</p>`:''}
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          ${badgePrio(t.priority)}
+          <select class="inp" style="padding:2px 6px;font-size:12px;height:26px;width:60px" onchange="updateTodoPrio('${t._id}',this.value)">
+            <option value="high" ${t.priority==='high'?'selected':''}>紧急</option>
+            <option value="medium" ${t.priority==='medium'?'selected':''}>中</option>
+            <option value="low" ${t.priority==='low'?'selected':''}>低</option>
+          </select>
           ${badgeStatus(t.status)}
           <button class="btn btn-danger btn-xs" onclick="deleteTodo('${t._id}')">${ICON.trash}</button>
         </div>
@@ -515,18 +519,32 @@ function renderTeamTodos() {
         ? `<div class="card p-5 text-center"><p class="text-muted text-sm">${S.teamFilter?'该成员暂无任务':'团队还没有任务，请开始创建吧'}</p></div>`
         : filtered.map(t=>{
             const assigneeLabel = t.assigneeEmail||'';
+            const canDelete = isOwner || (t.creatorId&&t.creatorId.toString()===S.user?.id) || (t.creator&&t.creator.toString()===S.user?.id);
+
+            const memberOptions = (team.members||[]).map(m=>`<option value="${m.email||''}" ${(t.assigneeEmail||'')===(m.email||'')?'selected':''}>${m.nickname||m.username||m.email||''}</option>`).join('');
+
             return `<div class="trow ${t.status==='done'?'done':''}" style="padding:12px 14px">
               <div class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="cycleTeamTodoStatus('${team._id}','${t._id}','${t.status}')" title="切换状态">
                 ${t.status==='done'?ICON.check:''}
               </div>
               <div class="flex-1 min-w-0">
                 <p class="truncate" style="font-size:14px;font-weight:500;${t.status==='done'?'text-decoration:line-through;color:var(--muted)':''}">${t.title}</p>
-                ${assigneeLabel?`<p class="text-xs text-muted mt-1">经办人：${assigneeLabel}</p>`:''}
+                <div class="flex items-center gap-2 mt-1" style="flex-wrap:wrap">
+                  ${assigneeLabel?`<span class="text-xs text-muted">经办人：${assigneeLabel}</span>`:'<span class="text-xs text-muted">暂无经办人</span>'}
+                </div>
               </div>
               <div class="flex items-center gap-2 shrink-0">
-                ${badgePrio(t.priority)}
+                <select class="inp" style="padding:2px 6px;font-size:12px;height:26px;width:60px" onchange="updateTeamTodoPrio('${team._id}','${t._id}',this.value)">
+                  <option value="high" ${t.priority==='high'?'selected':''}>紧急</option>
+                  <option value="medium" ${t.priority==='medium'?'selected':''}>中</option>
+                  <option value="low" ${t.priority==='low'?'selected':''}>低</option>
+                </select>
                 ${badgeStatus(t.status)}
-                ${isOwner?`<button class="btn btn-danger btn-xs" onclick="deleteTeamTodo('${team._id}','${t._id}')">${ICON.trash}</button>`:''}
+                <select class="inp" style="padding:2px 6px;font-size:12px;height:26px;width:90px" onchange="updateTeamTodoAssignee('${team._id}','${t._id}',this.value)">
+                  <option value="">无经办人</option>
+                  ${memberOptions}
+                </select>
+                ${canDelete?`<button class="btn btn-danger btn-xs" onclick="deleteTeamTodo('${team._id}','${t._id}')">${ICON.trash}</button>`:''}
               </div>
             </div>`;
           }).join('')}
@@ -686,6 +704,34 @@ async function cycleTeamTodoStatus(teamId, todoId, current) {
     render();
   } catch(e) { toast(e.message||'更新失败', 'error'); }
 }
+
+async function updateTodoPrio(id, priority) {
+  try {
+    await API.todos.update(id, { priority });
+    const t = S.todos.find(x=>x._id===id);
+    if (t) t.priority = priority;
+    render();
+  } catch(e) { toast(e.message||'更新失败','error'); }
+}
+
+async function updateTeamTodoPrio(teamId, todoId, priority) {
+  try {
+    await API.teams.updateTeamTodo(teamId, todoId, { priority });
+    const team = S.teams.find(t=>t._id===teamId);
+    if (team) { const todo = (team.todos||[]).find(t=>t._id===todoId); if (todo) todo.priority = priority; }
+    render();
+  } catch(e) { toast(e.message||'更新失败','error'); }
+}
+
+async function updateTeamTodoAssignee(teamId, todoId, assigneeEmail) {
+  try {
+    await API.teams.updateTeamTodo(teamId, todoId, { assigneeEmail });
+    const team = S.teams.find(t=>t._id===teamId);
+    if (team) { const todo = (team.todos||[]).find(t=>t._id===todoId); if (todo) todo.assigneeEmail = assigneeEmail; }
+    render();
+  } catch(e) { toast(e.message||'更新失败','error'); }
+}
+
 
 async function deleteTeamTodo(teamId, todoId) {
   if (!confirm('确认删除此任务？')) return;
