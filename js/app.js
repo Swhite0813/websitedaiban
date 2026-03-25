@@ -326,7 +326,7 @@ function renderDashboard() {
       <div class="text-center">${ICON.spin}<p class="text-muted mt-3">加载中…</p></div>
     </div>`;
   }
-  const currentTeam = S.teams.find(t => t._id === S.currentTeamId);
+  const needsBottomBar = S.dashTab === 'todos' || S.dashTab === 'teamtodos';
   return `
   <div class="dash">
     <aside class="sidebar">
@@ -339,34 +339,27 @@ function renderDashboard() {
       </div>
       <div class="divider"></div>
       <button class="si ${S.dashTab==='todos'?'active':''}" onclick="switchTab('todos')">${ICON.todo} 我的待办</button>
-      <button class="si ${S.dashTab==='myteams'?'active':''}" onclick="switchTab('myteams')">${ICON.team} 我的团队</button>
-      <button class="si ${S.dashTab==='teamtodos'?'active':''}" onclick="switchTab('teamtodos')" ${S.teams.length===0?'style="opacity:.4;cursor:not-allowed"':''}>
-        ${ICON.grid} 团队任务${currentTeam?` <span style="font-size:11px;color:var(--muted);margin-left:2px">(${currentTeam.name})</span>`:''}
-      </button>
-      <div class="divider" style="margin-top:auto"></div>
-      <button class="si" onclick="doLogout()">${ICON.logout} 退出登录</button>
+      <button class="si ${S.dashTab==='myteams'||S.dashTab==='teamtodos'?'active':''}" onclick="switchTab('myteams')">${ICON.team} 我的团队</button>
     </aside>
-    <main class="dmain" style="${S.dashTab==='todos'?'padding-bottom:80px':''}">
+    <main class="dmain" style="${needsBottomBar?'padding-bottom:80px':''}">
       ${S.dashTab==='todos' ? renderTodos() : S.dashTab==='myteams' ? renderMyTeams() : renderTeamTodos()}
     </main>
     ${S.modal ? renderModal() : ''}
   </div>
   <nav class="mbnav">
     <button class="si ${S.dashTab==='todos'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="switchTab('todos')">${ICON.todo}<span>待办</span></button>
-    <button class="si ${S.dashTab==='myteams'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="switchTab('myteams')">${ICON.team}<span>我的团队</span></button>
-    <button class="si ${S.dashTab==='teamtodos'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="switchTab('teamtodos')">${ICON.grid}<span>团队任务</span></button>
-    <button class="si" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="doLogout()">${ICON.logout}<span>退出</span></button>
+    <button class="si ${S.dashTab==='myteams'||S.dashTab==='teamtodos'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="switchTab('myteams')">${ICON.team}<span>我的团队</span></button>
   </nav>
-  ${S.dashTab==='todos' ? `
+  ${needsBottomBar ? `
   <div style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px 16px;box-shadow:0 -4px 20px rgba(40,50,120,.1)">
     <div class="flex gap-2 items-center" style="max-width:860px;margin:0 auto">
-      <input id="quick-add-inp" class="inp flex-1" placeholder="快速记录待办，按 Enter 创建…" onkeydown="if(event.key==='Enter')quickAddTodo()" style="padding:10px 14px" />
+      <input id="quick-add-inp" class="inp flex-1" placeholder="${S.dashTab==='teamtodos'?'快速新建团队任务…':'快速记录待办，按 Enter 创建…'}" onkeydown="if(event.key==='Enter')${S.dashTab==='teamtodos'?`quickAddTeamTodo('${S.currentTeamId}')`:"quickAddTodo()"}" style="padding:10px 14px" />
       <select id="quick-add-prio" class="inp" style="width:80px;padding:10px 8px">
         <option value="high">紧急</option>
         <option value="medium" selected>中</option>
         <option value="low">低</option>
       </select>
-      <button class="btn btn-brand" onclick="quickAddTodo()" style="padding:10px 16px">${ICON.plus}</button>
+      <button class="btn btn-brand" onclick="${S.dashTab==='teamtodos'?`quickAddTeamTodo('${S.currentTeamId}')`:"quickAddTodo()"}" style="padding:10px 16px">${ICON.plus}</button>
     </div>
   </div>` : ''}`;
 }
@@ -490,7 +483,6 @@ function renderTeamTodos() {
     <div class="flex items-center gap-2 mb-1">
       <button class="btn btn-surface btn-xs" onclick="switchTab('myteams')">${ICON.back} 返回</button>
       <h2 style="font-size:20px;flex:1">${team.name}</h2>
-      <button class="btn btn-brand btn-sm" onclick="openModal('addTeamTodo','${team._id}')">${ICON.plus} 新建</button>
     </div>
     <p class="text-xs text-muted mb-3">${(team.members||[]).length} 位成员 · ${todos.length} 项任务</p>
     ${assignees.length>0 ? `
@@ -605,6 +597,22 @@ function closeModal() { S.modal = null; render(); }
 function switchTab(tab) { S.dashTab = tab; render(); window.scrollTo(0,0); }
 function enterTeam(teamId) { S.currentTeamId = teamId; S.teamFilter = ''; S.dashTab = 'teamtodos'; render(); }
 function setTeamFilter(email) { S.teamFilter = email; render(); }
+
+async function quickAddTeamTodo(teamId) {
+  const inp = document.getElementById('quick-add-inp');
+  const title = inp?.value?.trim();
+  if (!title) { inp?.focus(); return; }
+  const priority = document.getElementById('quick-add-prio')?.value || 'medium';
+  try {
+    const res = await API.teams.createTeamTodo(teamId, { title, priority });
+    const team = S.teams.find(t=>t._id===teamId);
+    if (team) { team.todos = team.todos || []; team.todos.unshift(res.todo); }
+    inp.value = '';
+    render();
+    setTimeout(() => document.getElementById('quick-add-inp')?.focus(), 50);
+    toast('创建成功', 'success');
+  } catch(e) { toast(e.message||'创建失败', 'error'); }
+}
 
 async function quickAddTodo() {
   const inp = document.getElementById('quick-add-inp');
@@ -760,13 +768,13 @@ function render() {
   const navHtml = `
   <nav class="navbar">
     <div class="nbi">
-      <div class="logo" onclick="navigate(S.user?'dashboard':'home')">
+      <div class="logo" onclick="navigate(S.user?'dashboard':'home')" style="cursor:pointer">
         <div class="logo-icon">待</div>
         <span class="logo-text">待会<span style="color:var(--brand)">·</span>就办</span>
       </div>
       <div class="spacer"></div>
       ${S.user
-        ? `<span class="text-sm text-muted desktop-only">${S.user.nickname||S.user.username}</span>
+        ? `<span class="text-sm text-muted desktop-only" style="margin-right:6px">${S.user.nickname||S.user.username}</span>
            <button class="btn btn-outline btn-sm" onclick="doLogout()">${ICON.logout} 退出</button>`
         : `<button class="nav-btn ${S.page==='home'?'active':''}" onclick="navigate('home')">首页</button>
            <button class="btn btn-brand btn-sm" onclick="navigate('login')">登录 / 注册</button>`
