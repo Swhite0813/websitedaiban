@@ -8,9 +8,11 @@
 const S = {
   user: null,
   page: 'home',   // home | login | dashboard
-  dashTab: 'todos',
+  dashTab: 'todos',  // todos | myteams | teamtodos
   todos: [],
   teams: [],
+  currentTeamId: null,  // 当前查看的团队id
+  teamFilter: '',       // 团队任务经办人筛选
   loading: false,
   modal: null,    // null | { type, data }
 };
@@ -324,6 +326,7 @@ function renderDashboard() {
       <div class="text-center">${ICON.spin}<p class="text-muted mt-3">加载中…</p></div>
     </div>`;
   }
+  const currentTeam = S.teams.find(t => t._id === S.currentTeamId);
   return `
   <div class="dash">
     <aside class="sidebar">
@@ -335,23 +338,37 @@ function renderDashboard() {
         </div>
       </div>
       <div class="divider"></div>
-      <button class="si ${S.dashTab==='overview'?'active':''}" onclick="navigate('dashboard','overview')">${ICON.grid} 概览</button>
-      <button class="si ${S.dashTab==='todos'?'active':''}" onclick="navigate('dashboard','todos')">${ICON.todo} 我的待办</button>
-      <button class="si ${S.dashTab==='teams'?'active':''}" onclick="navigate('dashboard','teams')">${ICON.team} 团队协作</button>
+      <button class="si ${S.dashTab==='todos'?'active':''}" onclick="switchTab('todos')">${ICON.todo} 我的待办</button>
+      <button class="si ${S.dashTab==='myteams'?'active':''}" onclick="switchTab('myteams')">${ICON.team} 我的团队</button>
+      <button class="si ${S.dashTab==='teamtodos'?'active':''}" onclick="switchTab('teamtodos')" ${S.teams.length===0?'style="opacity:.4;cursor:not-allowed"':''}>
+        ${ICON.grid} 团队任务${currentTeam?` <span style="font-size:11px;color:var(--muted);margin-left:2px">(${currentTeam.name})</span>`:''}
+      </button>
       <div class="divider" style="margin-top:auto"></div>
       <button class="si" onclick="doLogout()">${ICON.logout} 退出登录</button>
     </aside>
-    <main class="dmain">
-      ${S.dashTab==='overview' ? renderOverview() : S.dashTab==='todos' ? renderTodos() : renderTeams()}
+    <main class="dmain" style="${S.dashTab==='todos'?'padding-bottom:80px':''}">
+      ${S.dashTab==='todos' ? renderTodos() : S.dashTab==='myteams' ? renderMyTeams() : renderTeamTodos()}
     </main>
     ${S.modal ? renderModal() : ''}
   </div>
   <nav class="mbnav">
-    <button class="si ${S.dashTab==='overview'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="navigate('dashboard','overview')">${ICON.grid} 概览</button>
-    <button class="si ${S.dashTab==='todos'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="navigate('dashboard','todos')">${ICON.todo} 待办</button>
-    <button class="si ${S.dashTab==='teams'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="navigate('dashboard','teams')">${ICON.team} 团队</button>
-    <button class="si" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="doLogout()">${ICON.logout} 退出</button>
-  </nav>`;
+    <button class="si ${S.dashTab==='todos'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="switchTab('todos')">${ICON.todo}<span>待办</span></button>
+    <button class="si ${S.dashTab==='myteams'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="switchTab('myteams')">${ICON.team}<span>我的团队</span></button>
+    <button class="si ${S.dashTab==='teamtodos'?'active':''}" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="switchTab('teamtodos')">${ICON.grid}<span>团队任务</span></button>
+    <button class="si" style="flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 4px" onclick="doLogout()">${ICON.logout}<span>退出</span></button>
+  </nav>
+  ${S.dashTab==='todos' ? `
+  <div style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px 16px;box-shadow:0 -4px 20px rgba(40,50,120,.1)">
+    <div class="flex gap-2 items-center" style="max-width:860px;margin:0 auto">
+      <input id="quick-add-inp" class="inp flex-1" placeholder="快速记录待办，按 Enter 创建…" onkeydown="if(event.key==='Enter')quickAddTodo()" style="padding:10px 14px" />
+      <select id="quick-add-prio" class="inp" style="width:80px;padding:10px 8px">
+        <option value="high">紧急</option>
+        <option value="medium" selected>中</option>
+        <option value="low">低</option>
+      </select>
+      <button class="btn btn-brand" onclick="quickAddTodo()" style="padding:10px 16px">${ICON.plus}</button>
+    </div>
+  </div>` : ''}`;
 }
 
 function renderOverview() {
@@ -381,19 +398,24 @@ function renderOverview() {
 }
 
 function renderTodos() {
+  const total = S.todos.length;
+  const done = S.todos.filter(t=>t.status==='done').length;
+  const doing = S.todos.filter(t=>t.status==='doing').length;
+  const high = S.todos.filter(t=>t.priority==='high'&&t.status!=='done').length;
   return `
   <div>
-    <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:10px">
-      <h2 style="font-size:22px">我的待办</h2>
-      <button class="btn btn-brand btn-sm" onclick="openModal('addTodo')">${ICON.plus} 新建待办</button>
+    <div class="grid-2" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">
+      <div class="card p-4"><p class="text-xs text-muted mb-1">全部</p><p class="snum">${total}</p></div>
+      <div class="card p-4"><p class="text-xs text-muted mb-1">已完成</p><p class="snum" style="color:var(--green)">${done}</p></div>
+      <div class="card p-4"><p class="text-xs text-muted mb-1">进行中</p><p class="snum" style="color:var(--amber)">${doing}</p></div>
+      <div class="card p-4"><p class="text-xs text-muted mb-1">紧急</p><p class="snum" style="color:var(--red)">${high}</p></div>
     </div>
     <div class="space-y-2">
       ${S.todos.length===0
-        ? '<div class="card p-6 text-center"><p class="text-muted">还没有待办事项</p><button class="btn btn-brand btn-sm mt-3" onclick="openModal(\'addTodo\')">+ 创建第一个</button></div>'
+        ? `<div class="card p-6 text-center"><p class="text-muted">还没有待办，在底部输入框快速创建吧</p></div>`
         : S.todos.map(t=>`
-      <div class="trow ${t.status==='done'?'done':''}">
-        <div class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="cycleTodoStatus('${t._id}','${t.status}')"
-          title="点击切换状态">
+      <div class="trow ${t.status==='done'?'done':''}" style="padding:12px 14px">
+        <div class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="cycleTodoStatus('${t._id}','${t.status}')" title="点击切换状态">
           ${t.status==='done'?ICON.check:''}
         </div>
         <div class="flex-1 min-w-0">
@@ -410,30 +432,93 @@ function renderTodos() {
   </div>`;
 }
 
-function renderTeams() {
+function renderMyTeams() {
+  const canCreate = S.teams.length < 3;
   return `
   <div>
     <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:10px">
-      <h2 style="font-size:22px">团队协作</h2>
-      <button class="btn btn-brand btn-sm" onclick="openModal('createTeam')">${ICON.plus} 创建团队</button>
+      <h2 style="font-size:22px">我的团队</h2>
+      <button class="btn btn-brand btn-sm" onclick="openModal('createTeam')" ${!canCreate?'disabled title="最多加入/创建3个团队"':''}>${ICON.plus} 创建团队</button>
     </div>
+    ${!canCreate?'<p class="text-xs text-muted mb-3">已达上限（最多3个团队）</p>':''}
     ${S.teams.length===0
-      ? '<div class="card p-6 text-center"><p class="text-muted">还没有团队，创建一个开始协作吧</p></div>'
+      ? `<div class="card p-6 text-center">
+          <div style="width:56px;height:56px;border-radius:16px;background:var(--bl);border:1.5px solid var(--bb);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">${ICON.team}</div>
+          <p class="font-semibold mb-2">还没有团队</p>
+          <p class="text-muted text-sm mb-4">创建一个团队，邀请成员开始协作</p>
+          <button class="btn btn-brand btn-sm" onclick="openModal('createTeam')">${ICON.plus} 创建团队</button>
+        </div>`
       : S.teams.map(t=>{
           const isOwner = t.owner===S.user?.id || t.owner?._id===S.user?.id;
-          return `<div class="card p-5 mb-3">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <div class="av" style="${avBg(isOwner?'owner':'member')}">${nameAv(t.name)}</div>
-                <div><p class="font-semibold">${t.name}</p><p class="text-xs text-muted">${(t.members||[]).length} 位成员</p></div>
+          return `<div class="card card-h p-5 mb-3" style="cursor:pointer" onclick="enterTeam('${t._id}')">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="av" style="width:42px;height:42px;font-size:15px;${avBg(isOwner?'owner':'member')}">${nameAv(t.name)}</div>
+                <div>
+                  <p class="font-semibold" style="font-size:15px">${t.name}</p>
+                  <p class="text-xs text-muted mt-1">${(t.members||[]).length} 位成员 · ${(t.todos||[]).length} 项任务</p>
+                </div>
               </div>
-              <span class="badge ${isOwner?'b-owner':'b-member'}">${isOwner?'创建者':'成员'}</span>
+              <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+                <span class="badge ${isOwner?'b-owner':'b-member'}">${isOwner?'创建者':'成员'}</span>
+                ${isOwner
+                  ? `<button class="btn btn-outline btn-xs" onclick="openModal('inviteMember','${t._id}')">邀请</button>
+                     <button class="btn btn-danger btn-xs" onclick="dissolveTeam('${t._id}')">解散</button>`
+                  : `<button class="btn btn-outline btn-xs" onclick="leaveTeam('${t._id}')">退出</button>`
+                }
+              </div>
             </div>
-            <p class="text-xs text-muted mb-2">团队待办：${(t.todos||[]).length} 项</p>
-            ${isOwner?`<div class="flex gap-2"><button class="btn btn-outline btn-xs" onclick="openModal('inviteMember','${t._id}')">邀请成员</button><button class="btn btn-danger btn-xs" onclick="dissolveTeam('${t._id}')">解散</button></div>`
-            :`<button class="btn btn-outline btn-xs" onclick="leaveTeam('${t._id}')">退出团队</button>`}
           </div>`;
         }).join('')}
+  </div>`;
+}
+
+function renderTeamTodos() {
+  const team = S.teams.find(t=>t._id===S.currentTeamId);
+  if (!team) {
+    return `<div class="card p-6 text-center">
+      <p class="text-muted mb-3">请先在「我的团队」中选择一个团队</p>
+      <button class="btn btn-outline btn-sm" onclick="switchTab('myteams')">去选择团队</button>
+    </div>`;
+  }
+  const todos = team.todos || [];
+  const assignees = [...new Set(todos.map(t=>t.assigneeEmail||'').filter(Boolean))];
+  const filtered = S.teamFilter ? todos.filter(t=>(t.assigneeEmail||'')===S.teamFilter) : todos;
+  const isOwner = team.owner===S.user?.id || team.owner?._id===S.user?.id;
+  return `
+  <div>
+    <div class="flex items-center gap-2 mb-1">
+      <button class="btn btn-surface btn-xs" onclick="switchTab('myteams')">${ICON.back} 返回</button>
+      <h2 style="font-size:20px;flex:1">${team.name}</h2>
+      <button class="btn btn-brand btn-sm" onclick="openModal('addTeamTodo','${team._id}')">${ICON.plus} 新建</button>
+    </div>
+    <p class="text-xs text-muted mb-3">${(team.members||[]).length} 位成员 · ${todos.length} 项任务</p>
+    ${assignees.length>0 ? `
+    <div class="flex gap-2 mb-4" style="flex-wrap:wrap">
+      <button class="badge ${!S.teamFilter?'b-owner':'b-todo'}" style="cursor:pointer" onclick="setTeamFilter('')">全部</button>
+      ${assignees.map(a=>`<button class="badge ${S.teamFilter===a?'b-owner':'b-todo'}" style="cursor:pointer" onclick="setTeamFilter('${a}')">${a}</button>`).join('')}
+    </div>` : ''}
+    <div class="space-y-2">
+      ${filtered.length===0
+        ? `<div class="card p-5 text-center"><p class="text-muted text-sm">${S.teamFilter?'该成员暂无任务':'团队还没有任务，点右上角新建'}</p></div>`
+        : filtered.map(t=>{
+            const assigneeLabel = t.assigneeEmail||'';
+            return `<div class="trow ${t.status==='done'?'done':''}" style="padding:12px 14px">
+              <div class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="cycleTeamTodoStatus('${team._id}','${t._id}','${t.status}')" title="切换状态">
+                ${t.status==='done'?ICON.check:''}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="truncate" style="font-size:14px;font-weight:500;${t.status==='done'?'text-decoration:line-through;color:var(--muted)':''}">${t.title}</p>
+                ${assigneeLabel?`<p class="text-xs text-muted mt-1">经办人：${assigneeLabel}</p>`:''}
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                ${badgePrio(t.priority)}
+                ${badgeStatus(t.status)}
+                ${isOwner?`<button class="btn btn-danger btn-xs" onclick="deleteTeamTodo('${team._id}','${t._id}')">${ICON.trash}</button>`:''}
+              </div>
+            </div>`;
+          }).join('')}
+    </div>
   </div>`;
 }
 
@@ -485,6 +570,29 @@ function renderModal() {
       </div>
     </div>`;
   }
+  if (m.type === 'addTeamTodo') {
+    return `<div class="mbd" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <button class="mclose" onclick="closeModal()">${ICON.x}</button>
+        <p class="mtitle mb-4">新建团队任务</p>
+        <label class="label">标题 *</label>
+        <input id="m-tt-title" class="inp mb-3" placeholder="任务标题" />
+        <label class="label">经办人邮箱（选填）</label>
+        <input id="m-tt-assignee" class="inp mb-3" placeholder="指定团队成员邮箱" />
+        <div class="grid-2 mb-4">
+          <div><label class="label">优先级</label>
+            <select id="m-tt-prio" class="inp">
+              <option value="high">紧急</option>
+              <option value="medium" selected>中</option>
+              <option value="low">低</option>
+            </select></div>
+          <div><label class="label">截止日期</label>
+            <input id="m-tt-due" type="date" class="inp" /></div>
+        </div>
+        <button class="btn btn-brand w-full" onclick="submitAddTeamTodo('${m.data}')">创建</button>
+      </div>
+    </div>`;
+  }
   return '';
 }
 
@@ -493,6 +601,64 @@ function renderModal() {
 // ============================================================
 function openModal(type, data) { S.modal = { type, data }; render(); }
 function closeModal() { S.modal = null; render(); }
+
+function switchTab(tab) { S.dashTab = tab; render(); window.scrollTo(0,0); }
+function enterTeam(teamId) { S.currentTeamId = teamId; S.teamFilter = ''; S.dashTab = 'teamtodos'; render(); }
+function setTeamFilter(email) { S.teamFilter = email; render(); }
+
+async function quickAddTodo() {
+  const inp = document.getElementById('quick-add-inp');
+  const title = inp?.value?.trim();
+  if (!title) { inp?.focus(); return; }
+  const priority = document.getElementById('quick-add-prio')?.value || 'medium';
+  try {
+    const res = await API.todos.create({ title, priority });
+    S.todos.unshift(res.todo);
+    inp.value = '';
+    render();
+    setTimeout(() => document.getElementById('quick-add-inp')?.focus(), 50);
+    toast('创建成功', 'success');
+  } catch(e) { toast(e.message||'创建失败', 'error'); }
+}
+
+async function cycleTeamTodoStatus(teamId, todoId, current) {
+  const next = STATUS_NEXT[current] || 'todo';
+  try {
+    await API.teams.updateTeamTodo(teamId, todoId, { status: next });
+    const team = S.teams.find(t=>t._id===teamId);
+    if (team) {
+      const todo = (team.todos||[]).find(t=>t._id===todoId);
+      if (todo) todo.status = next;
+    }
+    render();
+  } catch(e) { toast(e.message||'更新失败', 'error'); }
+}
+
+async function deleteTeamTodo(teamId, todoId) {
+  if (!confirm('确认删除此任务？')) return;
+  try {
+    await API.teams.deleteTeamTodo(teamId, todoId);
+    const team = S.teams.find(t=>t._id===teamId);
+    if (team) team.todos = (team.todos||[]).filter(t=>t._id!==todoId);
+    render();
+    toast('已删除', 'success');
+  } catch(e) { toast(e.message||'删除失败', 'error'); }
+}
+
+async function submitAddTeamTodo(teamId) {
+  const title = document.getElementById('m-tt-title')?.value?.trim();
+  if (!title) { toast('请输入标题', 'error'); return; }
+  const assigneeEmail = document.getElementById('m-tt-assignee')?.value?.trim() || '';
+  const priority = document.getElementById('m-tt-prio')?.value || 'medium';
+  const dueDate = document.getElementById('m-tt-due')?.value || null;
+  try {
+    const res = await API.teams.createTeamTodo(teamId, { title, priority, dueDate, assigneeEmail });
+    const team = S.teams.find(t=>t._id===teamId);
+    if (team) { team.todos = team.todos || []; team.todos.unshift(res.todo); }
+    closeModal();
+    toast('创建成功', 'success');
+  } catch(e) { toast(e.message||'创建失败', 'error'); }
+}
 
 async function cycleTodoStatus(id, current) {
   const next = STATUS_NEXT[current] || 'todo';
