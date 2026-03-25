@@ -24,7 +24,11 @@ const auth = async (req, res, next) => {
 router.get('/', auth, async (req, res) => {
   try {
     const teams = await Team.find({ 'members.userId': req.userId });
-    res.json({ success: true, teams });
+    const teamsWithOwner = teams.map(t => ({
+      ...t.toObject(),
+      owner: t.ownerId
+    }));
+    res.json({ success: true, teams: teamsWithOwner });
   } catch (err) {
     res.status(500).json({ error: '获取团队失败' });
   }
@@ -59,7 +63,7 @@ router.post('/', auth, async (req, res) => {
 // 检查邮箱是否已注册
 router.get('/check-phone/:phone', auth, async (req, res) => {
   try {
-    const email = req.params.phone; // 复用旧接口路径，但传的是 email
+    const email = req.params.phone;
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.json({ exists: false, message: '该邮箱尚未注册' });
     res.json({ exists: true, user: { email: user.email, nickname: user.nickname } });
@@ -71,7 +75,7 @@ router.get('/check-phone/:phone', auth, async (req, res) => {
 // 邀请成员
 router.post('/:teamId/invite', auth, async (req, res) => {
   try {
-    const { phone: email } = req.body; // 复用旧字段名，但传的是 email
+    const { phone: email } = req.body;
 
     const team = await Team.findById(req.params.teamId);
     if (!team) return res.status(404).json({ error: '团队不存在' });
@@ -180,7 +184,7 @@ router.post('/:teamId/todos', auth, async (req, res) => {
     const isMember = team.members.find(m => m.userId.toString() === req.userId.toString());
     if (!isMember) return res.status(403).json({ error: '无权操作' });
 
-    const { title, description, priority, assigneePhone: assigneeEmail } = req.body;
+    const { title, description, priority, assigneeEmail } = req.body;
     if (!title || !title.trim()) return res.status(400).json({ error: '标题不能为空' });
 
     let assigneeId = null;

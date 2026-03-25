@@ -475,8 +475,8 @@ function renderTeamTodos() {
     </div>`;
   }
   const todos = team.todos || [];
-  const assignees = [...new Set(todos.map(t=>t.assigneeEmail||'').filter(Boolean))];
-  const filtered = S.teamFilter ? todos.filter(t=>(t.assigneeEmail||'')===S.teamFilter) : todos;
+  const assignees = [...new Set(todos.map(t=>t.assigneePhone||t.assigneeEmail||'').filter(Boolean))];
+  const filtered = S.teamFilter ? todos.filter(t=>(t.assigneePhone||t.assigneeEmail||'')===S.teamFilter) : todos;
   const isOwner = team.owner===S.user?.id || team.owner?._id===S.user?.id;
   return `
   <div>
