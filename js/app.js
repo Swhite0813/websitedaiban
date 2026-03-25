@@ -131,6 +131,29 @@ function renderHome() {
           <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:10px">简单，才是最大效率</h2>
           <p class="text-muted">三个核心模块，解决效率管理最本质的问题。</p>
         </div>
+        <div class="fgrid mt-4">
+          <div class="card card-h p-5 fu d1">
+            <div class="ficon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <h3 style="font-size:17px;margin-bottom:8px">个人待办管理</h3>
+            <p class="text-muted text-sm" style="line-height:1.7">创建、分类、设置优先级和截止日期，把所有任务一网打尽。支持紧急 / 中 / 低三级优先级，随时掌控进度。</p>
+          </div>
+          <div class="card card-h p-5 fu d2">
+            <div class="ficon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3 style="font-size:17px;margin-bottom:8px">团队协作</h3>
+            <p class="text-muted text-sm" style="line-height:1.7">创建团队、邀请成员，共享团队任务清单。角色分明，创建者可管理成员，告别信息孤岛。</p>
+          </div>
+          <div class="card card-h p-5 fu d3">
+            <div class="ficon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <h3 style="font-size:17px;margin-bottom:8px">数据概览</h3>
+            <p class="text-muted text-sm" style="line-height:1.7">一屏看清全部任务状态：总量、已完成、进行中、紧急未完成，完成率一目了然，让效率可视化。</p>
+          </div>
+        </div>
       </div>
     </section>
 
