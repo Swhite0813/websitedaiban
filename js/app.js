@@ -140,11 +140,11 @@ function renderHome() {
 
     <section style="padding:40px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
       <div class="ctr">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;max-width:600px;margin:0 auto">
+        <div style="display:flex;justify-content:center;align-items:center;gap:0;max-width:640px;margin:0 auto">
           ${[['8万+','活跃用户'],['99%','任务完成率'],['5x','协作效率提升']].map(([v,l],i)=>`
-          <div class="fu d${i+1}">
-            <div class="snum" style="color:var(--brand)">${v}</div>
-            <div class="text-sm text-muted mt-1">${l}</div>
+          <div style="flex:1;text-align:center;padding:8px 12px;${i<2?'border-right:1px solid var(--border)':''}">
+            <div style="font-size:2rem;font-weight:800;color:var(--brand);line-height:1.1;font-family:'DM Sans',sans-serif">${v}</div>
+            <div style="font-size:0.85rem;color:var(--muted);margin-top:4px;font-family:'DM Sans',sans-serif">${l}</div>
           </div>`).join('')}
         </div>
       </div>
