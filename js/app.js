@@ -141,7 +141,7 @@ function renderHome() {
     <section style="padding:40px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
       <div class="ctr">
         <div style="display:flex;justify-content:center;align-items:center;gap:0;max-width:640px;margin:0 auto">
-          ${[['8万+','活跃用户'],['99%','任务完成率'],['5x','协作效率提升']].map(([v,l],i)=>`
+          ${[['更受欢迎','8W+活跃用户'],['更清晰','待办进度追踪'],['更效率','5X协作效率提升']].map(([v,l],i)=>`
           <div style="flex:1;text-align:center;padding:8px 12px;${i<2?'border-right:1px solid var(--border)':''}">
             <div style="font-size:2rem;font-weight:800;color:var(--brand);line-height:1.1;font-family:'DM Sans',sans-serif">${v}</div>
             <div style="font-size:0.85rem;color:var(--muted);margin-top:4px;font-family:'DM Sans',sans-serif">${l}</div>
@@ -157,7 +157,7 @@ function renderHome() {
           <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:10px">简单，才是最大效率</h2>
           <p class="text-muted">三个核心模块，解决效率管理最本质的问题。</p>
         </div>
-        <div class="fgrid">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
           ${[
             ['个人待办','随手记录，设置优先级，三态流转。清单越做越短，效率越来越高。','M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
             ['团队协同','创建团队，邀请成员，分配任务。每个人知道自己该做什么，不再靠催。','M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75'],
@@ -182,7 +182,7 @@ function renderHome() {
           <h2 style="font-size:clamp(1.6rem,4vw,2.4rem);margin-bottom:12px">别再拖了</h2>
           <p class="text-muted mb-4">注册只需 30 秒，把那份拖了一周的事今天做完吧。</p>
           <button class="btn btn-brand" onclick="navigate('login')">马上开始，不拖了</button>
-          <p class="text-xs text-muted mt-3">永久免费 · 无需信用卡</p>
+          <p class="text-xs text-muted mt-3">永久免费 · 注册即用</p>
         </div>
       </div>
     </section>
