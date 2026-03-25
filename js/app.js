@@ -442,7 +442,7 @@ function renderMyTeams() {
           <button class="btn btn-brand btn-sm" onclick="openModal('createTeam')">${ICON.plus} 创建团队</button>
         </div>`
       : S.teams.map(t=>{
-          const isOwner = t.owner===S.user?.id || t.owner?._id===S.user?.id;
+          const isOwner = t.owner?.toString()===S.user?.id || t.ownerId?.toString()===S.user?.id;
           return `<div class="card card-h p-5 mb-3" style="cursor:pointer" onclick="enterTeam('${t._id}')">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
@@ -477,7 +477,7 @@ function renderTeamTodos() {
   const todos = team.todos || [];
   const assignees = [...new Set(todos.map(t=>t.assigneePhone||t.assigneeEmail||'').filter(Boolean))];
   const filtered = S.teamFilter ? todos.filter(t=>(t.assigneePhone||t.assigneeEmail||'')===S.teamFilter) : todos;
-  const isOwner = team.owner===S.user?.id || team.owner?._id===S.user?.id;
+  const isOwner = team.owner?.toString()===S.user?.id || team.ownerId?.toString()===S.user?.id;
   return `
   <div>
     <div class="flex items-center gap-2 mb-1">
