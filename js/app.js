@@ -133,7 +133,7 @@ function renderHome() {
         <p class="fu d2">个人任务管理 + 团队协作，帮你把"待会再说"变成"马上搞定"。简单、快速、真实落地。</p>
         <div class="flex gap-2 fu d3" style="justify-content:center;flex-wrap:wrap">
           <button class="btn btn-brand" onclick="navigate('login')">免费开始使用</button>
-          <button class="btn btn-outline" onclick="navigate('features')">了解功能 →</button>
+          <button class="btn btn-outline" onclick="document.getElementById('features-section')?.scrollIntoView({behavior:'smooth'})">了解功能</button>
         </div>
       </div>
     </section>
@@ -150,7 +150,7 @@ function renderHome() {
       </div>
     </section>
 
-    <section style="padding:70px 20px; font-family:'DM Sans',sans-serif">
+    <section id="features-section" style="padding:70px 20px; font-family:'DM Sans',sans-serif">
       <div class="ctr">
         <div class="text-center mb-6">
           <div class="badge b-low" style="display:inline-flex;margin-bottom:12px">核心功能</div>
