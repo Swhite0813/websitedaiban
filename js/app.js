@@ -431,7 +431,10 @@ function renderMyTeams() {
   <div>
     <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:10px">
       <h2 style="font-size:22px">我的团队</h2>
-      <button class="btn btn-brand btn-sm" onclick="openModal('createTeam')" ${!canCreate?'disabled title="最多加入/创建3个团队"':''}>${ICON.plus} 创建团队</button>
+      <div class="flex gap-2">
+        <button class="btn btn-outline btn-sm" onclick="openModal('inviteMember',null)">${ICON.team} 邀请成员</button>
+        <button class="btn btn-brand btn-sm" onclick="openModal('createTeam')" ${!canCreate?'disabled title="最多加入/创建3个团队"':''}>${ICON.plus} 创建团队</button>
+      </div>
     </div>
     ${!canCreate?'<p class="text-xs text-muted mb-3">已达上限（最多3个团队）</p>':''}
     ${S.teams.length===0
@@ -448,15 +451,17 @@ function renderMyTeams() {
               <div class="flex items-center gap-3">
                 <div class="av" style="width:42px;height:42px;font-size:15px;${avBg(isOwner?'owner':'member')}">${nameAv(t.name)}</div>
                 <div>
-                  <p class="font-semibold" style="font-size:15px">${t.name}</p>
+                  <div class="flex items-center gap-2">
+                    <p class="font-semibold" style="font-size:15px">${t.name}</p>
+                    ${isOwner?`<button class="btn btn-surface btn-xs" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();openModal('editTeamName','${t._id}|${t.name.replace(/'/g,\'\')}')">编辑</button>`:''}
+                  </div>
                   <p class="text-xs text-muted mt-1">${(t.members||[]).length} 位成员 · ${(t.todos||[]).length} 项任务</p>
                 </div>
               </div>
               <div class="flex items-center gap-2" onclick="event.stopPropagation()">
                 <span class="badge ${isOwner?'b-owner':'b-member'}">${isOwner?'创建者':'成员'}</span>
                 ${isOwner
-                  ? `<button class="btn btn-outline btn-xs" onclick="openModal('inviteMember','${t._id}')">邀请</button>
-                     <button class="btn btn-danger btn-xs" onclick="dissolveTeam('${t._id}')">解散</button>`
+                  ? `<button class="btn btn-danger btn-xs" onclick="dissolveTeam('${t._id}')">解散</button>`
                   : `<button class="btn btn-outline btn-xs" onclick="leaveTeam('${t._id}')">退出</button>`
                 }
               </div>
@@ -492,7 +497,7 @@ function renderTeamTodos() {
     </div>` : ''}
     <div class="space-y-2">
       ${filtered.length===0
-        ? `<div class="card p-5 text-center"><p class="text-muted text-sm">${S.teamFilter?'该成员暂无任务':'团队还没有任务，点右上角新建'}</p></div>`
+        ? `<div class="card p-5 text-center"><p class="text-muted text-sm">${S.teamFilter?'该成员暂无任务':'团队还没有任务，请开始创建吧'}</p></div>`
         : filtered.map(t=>{
             const assigneeLabel = t.assigneeEmail||'';
             return `<div class="trow ${t.status==='done'?'done':''}" style="padding:12px 14px">
@@ -552,13 +557,38 @@ function renderModal() {
     </div>`;
   }
   if (m.type === 'inviteMember') {
+    const ownerTeams = S.teams.filter(t => t.owner?.toString()===S.user?.id || t.ownerId?.toString()===S.user?.id);
     return `<div class="mbd" onclick="if(event.target===this)closeModal()">
       <div class="modal">
         <button class="mclose" onclick="closeModal()">${ICON.x}</button>
         <p class="mtitle mb-4">邀请成员</p>
         <label class="label">成员邮箱 *</label>
-        <input id="m-invite-email" class="inp mb-4" placeholder="输入对方注册邮箱" />
-        <button class="btn btn-brand w-full" onclick="submitInvite('${m.data}')">邀请</button>
+        <input id="m-invite-email" class="inp mb-3" placeholder="输入对方注册邮箱" />
+        <label class="label">选择要加入的团队（可多选）*</label>
+        <div class="mb-4" style="display:flex;flex-direction:column;gap:8px">
+          ${ownerTeams.length===0
+            ? '<p class="text-xs text-muted">你还没有创建任何团队，无法邀请他人</p>'
+            : ownerTeams.map(t => `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--s2)">
+                <input type="checkbox" value="${t._id}" style="width:16px;height:16px;cursor:pointer" />
+                <span style="font-size:14px">${t.name}</span>
+              </label>`).join('')
+          }
+        </div>
+        <button class="btn btn-brand w-full" onclick="submitInviteMulti()">邀请</button>
+      </div>
+    </div>`;
+  }
+  if (m.type === 'editTeamName') {
+    const parts = (m.data||'').split('|');
+    const teamId = parts[0];
+    const oldName = parts.slice(1).join('|');
+    return `<div class="mbd" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <button class="mclose" onclick="closeModal()">${ICON.x}</button>
+        <p class="mtitle mb-4">编辑团队名称</p>
+        <label class="label">团队名称 *</label>
+        <input id="m-team-edit-name" class="inp mb-4" value="${oldName}" />
+        <button class="btn btn-brand w-full" onclick="submitEditTeamName('${teamId}')">保存</button>
       </div>
     </div>`;
   }
@@ -711,6 +741,39 @@ async function submitCreateTeam() {
     toast('团队创建成功','success');
     await loadTeams(); render();
   } catch(e) { toast(e.message||'创建失败','error'); }
+}
+
+async function submitInviteMulti() {
+  const email = document.getElementById('m-invite-email')?.value?.trim();
+  if (!email) { toast('请输入邮箱', 'error'); return; }
+  const checkboxes = document.querySelectorAll('.mbd input[type="checkbox"]:checked');
+  const teamIds = [...checkboxes].map(c => c.value);
+  if (teamIds.length === 0) { toast('请至少选择一个团队', 'error'); return; }
+  let successCount = 0;
+  let lastErr = '';
+  for (const teamId of teamIds) {
+    try {
+      await API.teams.invite(teamId, email);
+      successCount++;
+    } catch(e) { lastErr = e.message || '邀请失败'; }
+  }
+  closeModal();
+  if (successCount > 0) toast(`已成功邀请至 ${successCount} 个团队`, 'success');
+  else toast(lastErr || '邀请失败', 'error');
+  await loadTeams(); render();
+}
+
+async function submitEditTeamName(teamId) {
+  const name = document.getElementById('m-team-edit-name')?.value?.trim();
+  if (!name) { toast('请输入团队名称', 'error'); return; }
+  try {
+    await API.teams.rename(teamId, name);
+    const team = S.teams.find(t => t._id === teamId);
+    if (team) team.name = name;
+    closeModal();
+    toast('团队名称已更新', 'success');
+    render();
+  } catch(e) { toast(e.message || '更新失败', 'error'); }
 }
 
 async function submitInvite(teamId) {

@@ -34,6 +34,24 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// 修改团队名称
+router.put('/:teamId/rename', auth, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.teamId);
+    if (!team) return res.status(404).json({ error: '团队不存在' });
+    if (team.ownerId.toString() !== req.userId.toString()) {
+      return res.status(403).json({ error: '只有创建者可以修改团队名称' });
+    }
+    const { name } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: '名称不能为空' });
+    team.name = name.trim();
+    await team.save();
+    res.json({ success: true, team });
+  } catch (err) {
+    res.status(500).json({ error: '修改失败' });
+  }
+});
+
 // 创建团队
 router.post('/', auth, async (req, res) => {
   try {

@@ -105,6 +105,7 @@ const teamAPI = {
   dissolve: (teamId) => apiRequest(`/teams/${teamId}`, { method: 'DELETE' }),
   leave: (teamId) => apiRequest(`/teams/${teamId}/leave`, { method: 'POST' }),
   getTeamTodos: (teamId) => apiRequest(`/teams/${teamId}/todos`),
+  rename: (teamId, name) => apiRequest(`/teams/${teamId}/rename`, { method: 'PUT', body: { name } }),
   createTeamTodo: (teamId, data) => apiRequest(`/teams/${teamId}/todos`, { method: 'POST', body: data }),
   updateTeamTodo: (teamId, todoId, data) => apiRequest(`/teams/${teamId}/todos/${todoId}`, { method: 'PUT', body: data }),
   deleteTeamTodo: (teamId, todoId) => apiRequest(`/teams/${teamId}/todos/${todoId}`, { method: 'DELETE' })
