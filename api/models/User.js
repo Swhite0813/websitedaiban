@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -9,9 +10,20 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true,
+    trim: true
+  },
   nickname: {
     type: String,
     default: ''
+  },
+  password: {
+    type: String,
+    required: true
   },
   avatar: {
     type: String,
@@ -19,7 +31,7 @@ const userSchema = new mongoose.Schema({
   },
   isVerified: {
     type: Boolean,
-    default: false
+    default: true
   },
   createdAt: {
     type: Date,
@@ -28,43 +40,19 @@ const userSchema = new mongoose.Schema({
   lastLoginAt: {
     type: Date,
     default: Date.now
-  },
-  verificationCode: {
-    type: String,
-    default: null
-  },
-  verificationCodeExpires: {
-    type: Date,
-    default: null
   }
 });
 
-// 验证码存储到MongoDB，支持多实例部署
-userSchema.statics.storeVerificationCode = async function(email, code) {
-  await this.findOneAndUpdate(
-    { email: email.toLowerCase() },
-    {
-      $set: {
-        verificationCode: code,
-        verificationCodeExpires: new Date(Date.now() + 5 * 60 * 1000)
-      }
-    },
-    { upsert: true, new: true }
-  );
-};
+// 密码加密
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 
-userSchema.statics.verifyCode = async function(email, code) {
-  const user = await this.findOne({ email: email.toLowerCase() });
-  if (!user || !user.verificationCode) return false;
-  if (new Date() > user.verificationCodeExpires) {
-    await this.updateOne({ email: email.toLowerCase() }, { $unset: { verificationCode: 1, verificationCodeExpires: 1 } });
-    return false;
-  }
-  const isValid = user.verificationCode === code;
-  if (isValid) {
-    await this.updateOne({ email: email.toLowerCase() }, { $unset: { verificationCode: 1, verificationCodeExpires: 1 } });
-  }
-  return isValid;
+// 密码验证
+userSchema.methods.comparePassword = async function(password) {
+  return bcrypt.compare(password, this.password);
 };
 
 module.exports = mongoose.model('User', userSchema);

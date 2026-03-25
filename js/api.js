@@ -49,10 +49,22 @@ async function apiRequest(endpoint, options = {}) {
 
 // 认证相关API
 const authAPI = {
-  sendCode: (email) => apiRequest('/sms/send-code', { method: 'POST', body: { email } }),
+  getCaptcha: () => apiRequest('/auth/captcha'),
 
-  login: async (email, code) => {
-    const data = await apiRequest('/auth/login', { method: 'POST', body: { email, code } });
+  register: async (email, username, nickname, password, captcha, captchaAnswer) => {
+    const data = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: { email, username, nickname, password, captcha, captchaAnswer }
+    });
+    if (data.token) {
+      storage.setToken(data.token);
+      storage.setUser(data.user);
+    }
+    return data;
+  },
+
+  login: async (account, password) => {
+    const data = await apiRequest('/auth/login', { method: 'POST', body: { account, password } });
     if (data.token) {
       storage.setToken(data.token);
       storage.setUser(data.user);
