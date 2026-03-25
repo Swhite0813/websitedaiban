@@ -141,7 +141,7 @@ function renderHome() {
     <section style="padding:40px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
       <div class="ctr">
         <div style="display:flex;justify-content:center;align-items:center;gap:0;max-width:640px;margin:0 auto">
-          ${[['更受欢迎','8W+活跃用户'],['更清晰','待办进度追踪'],['更效率','5X协作效率提升']].map(([v,l],i)=>`
+          ${[['更受欢迎','8W+活跃用户'],['更加清晰','待办进度追踪'],['更有效率','5X协作效率提升']].map(([v,l],i)=>`
           <div style="flex:1;text-align:center;padding:8px 12px;${i<2?'border-right:1px solid var(--border)':''}">
             <div style="font-size:2rem;font-weight:800;color:var(--brand);line-height:1.1;font-family:'DM Sans',sans-serif">${v}</div>
             <div style="font-size:0.85rem;color:var(--muted);margin-top:4px;font-family:'DM Sans',sans-serif">${l}</div>
@@ -150,28 +150,29 @@ function renderHome() {
       </div>
     </section>
 
-    <section style="padding:70px 20px">
+    <section style="padding:70px 20px; font-family:'DM Sans',sans-serif">
       <div class="ctr">
         <div class="text-center mb-6">
           <div class="badge b-low" style="display:inline-flex;margin-bottom:12px">核心功能</div>
           <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:10px">简单，才是最大效率</h2>
           <p class="text-muted">三个核心模块，解决效率管理最本质的问题。</p>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch">
           ${[
             ['个人待办','随手记录，设置优先级，三态流转。清单越做越短，效率越来越高。','M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
             ['团队协同','创建团队，邀请成员，分配任务。每个人知道自己该做什么，不再靠催。','M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75'],
             ['进度追踪','实时查看每位成员的任务状态，项目进展一目了然，不用开会也知道全局。','M12 20h9 M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z']
-          ].map(([title,desc,path],i)=>`
-          <div class="card card-h p-6 fu d${i+1}">
-            <div class="ficon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round">
-                <path d="${path}"/>
-              </svg>
+          ].map(([title, desc, path]) => `
+            <div class="card card-h p-6" style="min-width:0;box-sizing:border-box">
+              <div class="ficon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round">
+                  <path d="${path}"/>
+                </svg>
+              </div>
+              <h3 style="font-size:17px;font-weight:700;margin-bottom:8px">${title}</h3>
+              <p style="font-size:14px;color:var(--muted);line-height:1.7">${desc}</p>
             </div>
-            <h3 style="font-size:17px;margin-bottom:8px">${title}</h3>
-            <p class="text-sm text-muted" style="line-height:1.7">${desc}</p>
-          </div>`)}
+          `).join('')}
         </div>
       </div>
     </section>
@@ -460,7 +461,9 @@ function renderTodosTab() {
 // DASHBOARD — TEAM TAB
 // ============================================================
 function myTeam() {
-  return S.teams.find(t => t.members?.some(m => m.userId === S.user?.id || m.userId === S.user?._id));
+  const selectedId = window._selectedTeamId;
+  if (selectedId) return S.teams.find(t => t._id === selectedId);
+  return S.teams[0] || null;
 }
 function myRole(team) {
   const uid = S.user?.id || S.user?._id;
@@ -477,11 +480,34 @@ async function createTeam(e) {
   try {
     const res = await API.teams.create(name);
     S.teams.push({ ...res.team, todos: [] });
+    window._selectedTeamId = res.team._id;
     toast('团队创建成功', 'success');
     window._teamView = 'main';
     renderDashContent();
   } catch(e) { toast(e.message || '创建失败', 'error'); }
   btn.disabled = false; btn.innerHTML = '确认创建';
+}
+
+async function dissolveTeam(teamId) {
+  if (!confirm('确认解散团队？此操作不可撤销，团队所有任务将被删除。')) return;
+  try {
+    await API.teams.dissolve(teamId);
+    S.teams = S.teams.filter(t => t._id !== teamId);
+    window._selectedTeamId = S.teams[0]?._id || null;
+    toast('团队已解散', 'success');
+    renderDashContent();
+  } catch(e) { toast(e.message || '解散失败', 'error'); }
+}
+
+async function leaveTeam(teamId) {
+  if (!confirm('确认退出团队？')) return;
+  try {
+    await API.teams.leave(teamId);
+    S.teams = S.teams.filter(t => t._id !== teamId);
+    window._selectedTeamId = S.teams[0]?._id || null;
+    toast('已退出团队', 'success');
+    renderDashContent();
+  } catch(e) { toast(e.message || '退出失败', 'error'); }
 }
 
 async function inviteMember() {
@@ -536,21 +562,7 @@ async function removeMember(phone) {
 }
 
 function renderTeamTab() {
-  const team = myTeam();
   const view = window._teamView || 'main';
-  if (!team && view !== 'create') {
-    return `
-    <div>
-      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px">我的团队</h2>
-      <p class="text-sm text-muted mb-6">你还没有加入任何团队</p>
-      <div class="card p-6 text-center" style="max-width:360px">
-        <div class="ficon" style="margin:0 auto 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">创建第一个团队</h3>
-        <p class="text-sm text-muted mb-4">邀请成员，分配任务，共同完成目标。</p>
-        <button class="btn btn-brand w-full" onclick="window._teamView='create';renderDashContent()">${ICON.plus} 创建团队</button>
-      </div>
-    </div>`;
-  }
   if (view === 'create') {
     return `
     <div>
@@ -566,63 +578,83 @@ function renderTeamTab() {
       </form>
     </div>`;
   }
-  const isOwner = myRole(team) === 'owner';
+  const team = myTeam();
   return `
   <div>
-    <div class="flex justify-between items-center mb-5 flex-wrap gap-2">
-      <div>
-        <h2 style="font-size:20px;font-weight:700">${team.name}</h2>
-        <p class="text-sm text-muted mt-1">${team.members?.length || 0} 名成员</p>
-      </div>
-      <span class="badge b-done">团队活跃中</span>
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+      <h2 style="font-size:20px;font-weight:700">我的团队</h2>
+      <button class="btn btn-brand btn-sm" onclick="window._teamView='create';renderDashContent()">${ICON.plus} 新建团队</button>
     </div>
-    <div class="card p-5 mb-4">
-      <h3 class="font-semibold text-sm mb-3">成员列表</h3>
-      <div class="space-y-3">
-        ${(team.members||[]).map(m => `
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="av" style="${avBg(m.role)}">${nameAv(m.nickname)}</div>
-            <div>
-              <p class="font-medium text-sm">${m.nickname || '用户'}</p>
-              <p class="text-xs text-muted">${phoneMask(m.phone)}</p>
+    ${S.teams.length === 0 ? `
+    <div class="card p-6 text-center" style="max-width:360px">
+      <div class="ficon" style="margin:0 auto 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">还没有团队</h3>
+      <p class="text-sm text-muted mb-4">创建团队，邀请成员，分配任务。</p>
+    </div>` : `
+    <div class="flex gap-2 mb-4 flex-wrap">
+      ${S.teams.map(t => `<button class="btn btn-sm ${(window._selectedTeamId||S.teams[0]?._id)===t._id?'btn-brand':'btn-surface'}" onclick="window._selectedTeamId='${t._id}';renderDashContent()">${t.name}</button>`).join('')}
+    </div>
+    ${team ? (() => {
+      const isOwner = myRole(team) === 'owner';
+      return `
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div>
+          <span style="font-size:16px;font-weight:600">${team.name}</span>
+          <span class="text-sm text-muted ml-2">${team.members?.length || 0} 名成员</span>
+        </div>
+        <div class="flex gap-2">
+          ${isOwner ? `<button class="btn btn-xs btn-danger" onclick="dissolveTeam('${team._id}')">解散团队</button>` : `<button class="btn btn-xs btn-surface" onclick="leaveTeam('${team._id}')">退出团队</button>`}
+        </div>
+      </div>
+      <div class="card p-5 mb-4">
+        <h3 class="font-semibold text-sm mb-3">成员列表</h3>
+        <div class="space-y-3">
+          ${(team.members||[]).map(m => `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="av" style="${avBg(m.role)}">${nameAv(m.nickname)}</div>
+              <div>
+                <p class="font-medium text-sm">${m.nickname || '用户'}</p>
+                <p class="text-xs text-muted">${m.email || ''}</p>
+              </div>
             </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="badge ${m.role==='owner'?'b-owner':'b-member'}">${m.role==='owner'?'管理员':'成员'}</span>
-            ${isOwner && m.role !== 'owner' ? `<button class="btn btn-xs btn-danger" onclick="removeMember('${m.email}')">${ICON.x}</button>` : ''}
-          </div>
-        </div>`).join('')}
+            <div class="flex items-center gap-2">
+              <span class="badge ${m.role==='owner'?'b-owner':'b-member'}">${m.role==='owner'?'管理员':'成员'}</span>
+              ${isOwner && m.role !== 'owner' ? `<button class="btn btn-xs btn-danger" onclick="removeMember('${m.email}')">${ICON.x}</button>` : ''}
+            </div>
+          </div>`).join('')}
+        </div>
       </div>
-    </div>
-    ${isOwner ? `
-    <div class="card p-5">
-      <h3 class="font-semibold text-sm mb-3">邀请新成员</h3>
-      <p class="text-xs text-muted mb-3">仅可邀请已注册的用户（系统会自动校验）</p>
-      <div class="flex gap-2 flex-wrap">
-        <input id="invite-phone" class="inp flex-1" style="min-width:160px" placeholder="输入对方邮箱地址" onkeydown="if(event.key==='Enter')inviteMember()" />
-        <button id="invite-btn" class="btn btn-brand btn-sm shrink-0" onclick="inviteMember()">邀请</button>
-      </div>
-      <p id="invite-status" class="text-xs mt-2" style="min-height:18px"></p>
-    </div>` : ''}
+      ${isOwner ? `
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-3">邀请新成员</h3>
+        <p class="text-xs text-muted mb-3">仅可邀请已注册的用户（系统会自动校验）</p>
+        <div class="flex gap-2 flex-wrap">
+          <input id="invite-phone" class="inp flex-1" style="min-width:160px" placeholder="输入对方邮箱地址" onkeydown="if(event.key==='Enter')inviteMember()" />
+          <button id="invite-btn" class="btn btn-brand btn-sm shrink-0" onclick="inviteMember()">邀请</button>
+        </div>
+        <p id="invite-status" class="text-xs mt-2" style="min-height:18px"></p>
+      </div>` : ''}`;
+    })() : ''}
+    `}
   </div>`;
 }
 
 // ============================================================
 // DASHBOARD — MEMBERS TAB
 // ============================================================
-async function addTeamTodo(e, phone) {
+async function addTeamTodo(e, email) {
   e.preventDefault();
-  const titleEl = document.getElementById(`ttodo-${phone}`);
-  const prioEl = document.getElementById(`tprio-${phone}`);
+  const titleEl = document.getElementById(`ttodo-${email}`);
+  const prioEl = document.getElementById(`tprio-${email}`);
   const title = titleEl?.value?.trim();
   if (!title) return;
   const team = myTeam();
   if (!team) return;
-  const btn = document.getElementById(`ttodo-btn-${phone}`);
+  const btn = document.getElementById(`ttodo-btn-${email}`);
   if (btn) { btn.disabled=true; btn.innerHTML=ICON.spin+'…'; }
   try {
-    const res = await API.teams.createTeamTodo(team._id, { title, priority: prioEl?.value||'medium', assigneePhone: phone });
+    const res = await API.teams.createTeamTodo(team._id, { title, priority: prioEl?.value||'medium', assigneePhone: email });
     const idx = S.teams.findIndex(t=>t._id===team._id);
     if (idx>=0) S.teams[idx].todos = [res.todo, ...(S.teams[idx].todos||[])];
     titleEl.value = '';
@@ -656,26 +688,29 @@ async function deleteTeamTodo(teamId, todoId) {
 }
 
 function renderMembersTab() {
-  const team = myTeam();
-  if (!team) {
+  if (S.teams.length === 0) {
     return `<div class="card p-6 text-center text-muted text-sm">请先加入或创建团队</div>`;
   }
+  const selectedId = window._selectedTeamId || S.teams[0]?._id;
+  const team = S.teams.find(t => t._id === selectedId) || S.teams[0];
+  if (!team) return `<div class="card p-6 text-center text-muted text-sm">请先选择团队</div>`;
+
   const isOwner = myRole(team) === 'owner';
   const members = team.members || [];
   const teamTodos = team.todos || [];
 
   return `
   <div>
-    <div class="flex justify-between items-center mb-5 flex-wrap gap-2">
-      <div>
-        <h2 style="font-size:20px;font-weight:700">成员任务</h2>
-        <p class="text-sm text-muted mt-1">${team.name} · ${members.length} 名成员</p>
-      </div>
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+      <h2 style="font-size:20px;font-weight:700">成员任务</h2>
     </div>
+    <div class="flex gap-2 mb-4 flex-wrap">
+      ${S.teams.map(t => `<button class="btn btn-sm ${t._id===team._id?'btn-brand':'btn-surface'}" onclick="window._selectedTeamId='${t._id}';renderDashContent()">${t.name}</button>`).join('')}
+    </div>
+    <p class="text-sm text-muted mb-4">${team.name} · ${members.length} 名成员</p>
     <div class="space-y-4">
       ${members.map(m => {
-        const memberTodos = teamTodos.filter(t => t.assigneePhone === m.phone || t.assignee === m.userId);
-        const safePhone = m.phone || m.userId || Math.random().toString(36).slice(2);
+        const memberTodos = teamTodos.filter(t => t.assigneePhone === m.email || t.assigneeId === m.userId);
         return `
         <div class="card p-5">
           <div class="flex items-center justify-between mb-4">
@@ -683,20 +718,20 @@ function renderMembersTab() {
               <div class="av" style="${avBg(m.role)}">${nameAv(m.nickname)}</div>
               <div>
                 <p class="font-medium text-sm">${m.nickname || '用户'}</p>
-                <p class="text-xs text-muted">${phoneMask(m.phone)} · ${m.role==='owner'?'管理员':'成员'}</p>
+                <p class="text-xs text-muted">${m.email || ''} · ${m.role==='owner'?'管理员':'成员'}</p>
               </div>
             </div>
             <span class="badge b-todo">${memberTodos.length} 项任务</span>
           </div>
           ${isOwner ? `
-          <form onsubmit="addTeamTodo(event,'${m.phone}')" class="flex gap-2 mb-3 flex-wrap">
-            <input id="ttodo-${m.phone}" class="inp flex-1" style="min-width:140px;font-size:13px" placeholder="分配新任务…" required />
-            <select id="tprio-${m.phone}" class="inp" style="width:80px;font-size:13px">
+          <form onsubmit="addTeamTodo(event,'${m.email}')" class="flex gap-2 mb-3 flex-wrap">
+            <input id="ttodo-${m.email}" class="inp flex-1" style="min-width:140px;font-size:13px" placeholder="分配新任务…" required />
+            <select id="tprio-${m.email}" class="inp" style="width:80px;font-size:13px">
               <option value="high">紧急</option>
               <option value="medium" selected>中</option>
               <option value="low">低</option>
             </select>
-            <button id="ttodo-btn-${m.phone}" class="btn btn-brand btn-sm shrink-0" type="submit">${ICON.plus}分配</button>
+            <button id="ttodo-btn-${m.email}" class="btn btn-brand btn-sm shrink-0" type="submit">${ICON.plus}分配</button>
           </form>` : ''}
           <div class="space-y-2">
             ${memberTodos.length === 0 ? `<p class="text-xs text-muted">暂无分配任务</p>` :
@@ -719,7 +754,6 @@ function renderMembersTab() {
     </div>
   </div>`;
 }
-
 // ============================================================
 // DASHBOARD SHELL
 // ============================================================
