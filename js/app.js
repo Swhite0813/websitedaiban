@@ -453,7 +453,7 @@ function renderMyTeams() {
                 <div>
                   <div class="flex items-center gap-2">
                     <p class="font-semibold" style="font-size:15px">${t.name}</p>
-                    ${isOwner?`<button class="btn btn-surface btn-xs" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();openModal('editTeamName','${t._id}|${t.name.replace(/'/g,\'\')}')">编辑</button>`:''}
+                    ${isOwner?'<button class="btn btn-surface btn-xs" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();openModal(\"editTeamName\",\"'+t._id+'|"+t.name.replace(/"/g,"")+"\")">编辑</button>':''}
                   </div>
                   <p class="text-xs text-muted mt-1">${(t.members||[]).length} 位成员 · ${(t.todos||[]).length} 项任务</p>
                 </div>
