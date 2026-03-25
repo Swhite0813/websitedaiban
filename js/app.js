@@ -353,13 +353,13 @@ function renderDashboard() {
   ${needsBottomBar ? `
   <div style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px 16px;box-shadow:0 -4px 20px rgba(40,50,120,.1)">
     <div class="flex gap-2 items-center" style="max-width:860px;margin:0 auto">
-      <input id="quick-add-inp" class="inp flex-1" placeholder="${S.dashTab==='teamtodos'?'快速新建团队任务…':'快速记录待办，按 Enter 创建…'}" onkeydown="if(event.key==='Enter')${S.dashTab==='teamtodos'?`quickAddTeamTodo('${S.currentTeamId}')`:"quickAddTodo()"}" style="padding:10px 14px" />
+      <input id="quick-add-inp" class="inp flex-1" placeholder="${S.dashTab==='teamtodos'?'快速新建团队任务…':'快速记录待办，按 Enter 创建…'}" onkeydown="if(event.key==='Enter'){S.dashTab==='teamtodos'?quickAddTeamTodo('${S.currentTeamId}'):quickAddTodo()}" style="padding:10px 14px" />
       <select id="quick-add-prio" class="inp" style="width:80px;padding:10px 8px">
         <option value="high">紧急</option>
         <option value="medium" selected>中</option>
         <option value="low">低</option>
       </select>
-      <button class="btn btn-brand" onclick="${S.dashTab==='teamtodos'?`quickAddTeamTodo('${S.currentTeamId}')`:"quickAddTodo()"}" style="padding:10px 16px">${ICON.plus}</button>
+      <button class="btn btn-brand" onclick="S.dashTab==='teamtodos'?quickAddTeamTodo('${S.currentTeamId}'):quickAddTodo()" style="padding:10px 16px">${ICON.plus}</button>
     </div>
   </div>` : ''}`;
 }
@@ -453,7 +453,7 @@ function renderMyTeams() {
                 <div>
                   <div class="flex items-center gap-2">
                     <p class="font-semibold" style="font-size:15px">${t.name}</p>
-                    ${isOwner?'<button class="btn btn-surface btn-xs" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();openModal(\"editTeamName\",\"'+t._id+'|"+t.name.replace(/"/g,"")+"\")">编辑</button>':''}
+                    ${isOwner?`<button class="btn btn-surface btn-xs" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();openModal('editTeamName','${t._id}|${t.name.replace(/'/g,\'\')}')">编辑</button>`:''}
                   </div>
                   <p class="text-xs text-muted mt-1">${(t.members||[]).length} 位成员 · ${(t.todos||[]).length} 项任务</p>
                 </div>
