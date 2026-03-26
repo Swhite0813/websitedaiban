@@ -544,7 +544,7 @@ function renderTeamTodos() {
                   <option value="">无经办人</option>
                   ${memberOptions}
                 </select>
-                ${canDelete?`<button class="btn btn-danger btn-xs" onclick="deleteTeamTodo('${team._id}','${t._id}')">${ICON.trash}</button>`:''}
+                ${canDelete?'<button class="btn btn-danger btn-xs" onclick="deleteTeamTodo(\''+team._id+'\',\''+t._id+'\')">'+(ICON.trash)+'</button>':''}
               </div>
             </div>`;
           }).join('')}
