@@ -395,31 +395,27 @@ function renderOverview() {
 
 // ---- 树形待办渲染辅助 ----
 function renderTodoNode(t, depth) {
-  const indent = depth * 22;
+  const indent = depth * 24;
   const hasChildren = t.children && t.children.length > 0;
   const collapsed = S.collapsedTodos.has(t._id);
   const prio = t.priority || 'medium';
+  const prioNext = prio==='high'?'medium':prio==='medium'?'low':'high';
   const rows = [];
-  rows.push(`<div class="trow ${t.status==='done'?'done':''}" style="padding:8px 10px 8px ${indent+10}px;border-left:${depth>0?'2px solid var(--border)':'none'};margin-left:${depth>0?indent-2:0}px">
+  rows.push(`<div class="trow ${t.status==='done'?'done':''}" style="padding:10px 12px 10px ${indent+12}px;border-left:${depth>0?'2px solid var(--border)':'none'};margin-left:${depth>0?indent:0}px;margin-bottom:4px">
     <span style="width:18px;display:inline-flex;align-items:center;cursor:pointer;color:var(--muted);flex-shrink:0" onclick="toggleTodo('${t._id}')">
       ${hasChildren ? (collapsed ? '▶' : '▼') : '<span style="opacity:0">▶</span>'}
     </span>
     <div class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="cycleTodoStatus('${t._id}','${t.status}')" title="切换状态" style="flex-shrink:0">
       ${t.status==='done'?ICON.check:''}
     </div>
-    <div class="flex-1 min-w-0" style="padding:0 8px">
+    <div class="flex-1 min-w-0" style="padding:0 10px">
       <p class="truncate" style="font-size:14px;font-weight:${depth===0?600:400};${t.status==='done'?'text-decoration:line-through;color:var(--muted)':''}">${t.title}</p>
     </div>
-    <div class="flex items-center gap-1 shrink-0">
-      <select class="inp" style="padding:1px 4px;font-size:11px;height:22px;width:54px" onchange="updateTodoPrio('${t._id}',this.value)">
-        <option value="high" ${prio==='high'?'selected':''}>紧急</option>
-        <option value="medium" ${prio==='medium'?'selected':''}>中</option>
-        <option value="low" ${prio==='low'?'selected':''}>低</option>
-      </select>
-      <span class="badge ${prio==='high'?'b-high':prio==='low'?'b-low':'b-medium'}" style="font-size:10px;padding:1px 5px">${prio==='high'?'紧急':prio==='low'?'低':'中'}</span>
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="badge ${prio==='high'?'b-high':prio==='low'?'b-low':'b-medium'}" style="cursor:pointer;font-size:11px;padding:2px 7px" onclick="updateTodoPrio('${t._id}','${prioNext}')" title="点击切换优先级">${prio==='high'?'紧急':prio==='low'?'低':'中'}</span>
       ${badgeStatus(t.status)}
-      ${depth < 3 ? `<button class="btn btn-surface btn-xs" style="padding:1px 5px;font-size:11px" onclick="quickAddChild('${t._id}')" title="添加子待办">+子</button>` : ''}
-      <button class="btn btn-danger btn-xs" style="padding:1px 5px" onclick="deleteTodo('${t._id}')">${ICON.trash}</button>
+      <button class="btn btn-danger btn-xs" style="padding:2px 6px" onclick="deleteTodo('${t._id}')">${ICON.trash}</button>
+      ${depth < 3 ? '<button class="btn btn-surface btn-xs" style="padding:2px 6px;font-size:11px" onclick="quickAddChild(''+t._id+'')" title="添加子待办">+子</button>' : ''}
     </div>
   </div>`);
   if (hasChildren && !collapsed) {
