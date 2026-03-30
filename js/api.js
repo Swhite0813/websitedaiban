@@ -110,6 +110,8 @@ const todoAPI = {
     return apiRequest(`/todos${q ? '?' + q : ''}`);
   },
   create: (data) => apiRequest('/todos', { method: 'POST', body: data }),
+  // data 可包含 parentId 来创建子待办
+  createChild: (parentId, data) => apiRequest('/todos', { method: 'POST', body: { ...data, parentId } }),
   update: (id, data) => apiRequest(`/todos/${id}`, { method: 'PUT', body: data }),
   delete: (id) => apiRequest(`/todos/${id}`, { method: 'DELETE' }),
   getStats: () => apiRequest('/todos/stats/summary')

@@ -18,18 +18,23 @@ const todoSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
-  assigneePhone: {
-    type: String,
-    default: null
+  assigneePhone: { type: String, default: null },
+  assigneeEmail: { type: String, default: null },
+
+  // 子待办支持
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Todo',
+    default: null,
+    index: true
   },
-  title: {
-    type: String,
-    required: true
+  level: {
+    type: Number,
+    default: 0  // 0=主待办, 1=子待办, 2=子子待办, 3=子子子待办
   },
-  description: {
-    type: String,
-    default: ''
-  },
+
+  title: { type: String, required: true },
+  description: { type: String, default: '' },
   priority: {
     type: String,
     enum: ['high', 'medium', 'low'],
@@ -40,21 +45,10 @@ const todoSchema = new mongoose.Schema({
     enum: ['todo', 'doing', 'done'],
     default: 'todo'
   },
-  dueDate: {
-    type: Date,
-    default: null
-  },
-  tags: [{
-    type: String
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
+  dueDate: { type: Date, default: null },
+  tags: [{ type: String }],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 todoSchema.pre('save', function(next) {

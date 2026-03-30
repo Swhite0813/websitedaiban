@@ -15,6 +15,8 @@ const S = {
   teamFilter: '',       // 团队任务经办人筛选
   loading: false,
   modal: null,    // null | { type, data }
+  collapsedTodos: new Set(), // 折叠的待办 id
+  todoFilter: 'all',         // all | high | medium | low | todo | doing | done
 };
 
 // ---- Toast ----
@@ -390,41 +392,98 @@ function renderOverview() {
   </div>`;
 }
 
+
+// ---- 树形待办渲染辅助 ----
+function renderTodoNode(t, depth) {
+  const indent = depth * 22;
+  const hasChildren = t.children && t.children.length > 0;
+  const collapsed = S.collapsedTodos.has(t._id);
+  const prio = t.priority || 'medium';
+  const rows = [];
+  rows.push(`<div class="trow ${t.status==='done'?'done':''}" style="padding:8px 10px 8px ${indent+10}px;border-left:${depth>0?'2px solid var(--border)':'none'};margin-left:${depth>0?indent-2:0}px">
+    <span style="width:18px;display:inline-flex;align-items:center;cursor:pointer;color:var(--muted);flex-shrink:0" onclick="toggleTodo('${t._id}')">
+      ${hasChildren ? (collapsed ? '▶' : '▼') : '<span style="opacity:0">▶</span>'}
+    </span>
+    <div class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="cycleTodoStatus('${t._id}','${t.status}')" title="切换状态" style="flex-shrink:0">
+      ${t.status==='done'?ICON.check:''}
+    </div>
+    <div class="flex-1 min-w-0" style="padding:0 8px">
+      <p class="truncate" style="font-size:14px;font-weight:${depth===0?600:400};${t.status==='done'?'text-decoration:line-through;color:var(--muted)':''}">${t.title}</p>
+    </div>
+    <div class="flex items-center gap-1 shrink-0">
+      <select class="inp" style="padding:1px 4px;font-size:11px;height:22px;width:54px" onchange="updateTodoPrio('${t._id}',this.value)">
+        <option value="high" ${prio==='high'?'selected':''}>紧急</option>
+        <option value="medium" ${prio==='medium'?'selected':''}>中</option>
+        <option value="low" ${prio==='low'?'selected':''}>低</option>
+      </select>
+      <span class="badge ${prio==='high'?'b-high':prio==='low'?'b-low':'b-medium'}" style="font-size:10px;padding:1px 5px">${prio==='high'?'紧急':prio==='low'?'低':'中'}</span>
+      ${badgeStatus(t.status)}
+      ${depth < 3 ? `<button class="btn btn-surface btn-xs" style="padding:1px 5px;font-size:11px" onclick="quickAddChild('${t._id}')" title="添加子待办">+子</button>` : ''}
+      <button class="btn btn-danger btn-xs" style="padding:1px 5px" onclick="deleteTodo('${t._id}')">${ICON.trash}</button>
+    </div>
+  </div>`);
+  if (hasChildren && !collapsed) {
+    for (const child of t.children) {
+      rows.push(...renderTodoNode(child, depth + 1));
+    }
+  }
+  return rows;
+}
+
+function countAll(todos) {
+  let total = 0, done = 0, doing = 0, high = 0;
+  function walk(list) {
+    for (const t of list) {
+      total++;
+      if (t.status === 'done') done++;
+      if (t.status === 'doing') doing++;
+      if (t.priority === 'high' && t.status !== 'done') high++;
+      if (t.children && t.children.length) walk(t.children);
+    }
+  }
+  walk(todos);
+  return { total, done, doing, high };
+}
+
+function filterTodos(todos) {
+  if (S.todoFilter === 'all') return todos;
+  const prios = ['high','medium','low'];
+  const stats = ['todo','doing','done'];
+  function match(t) {
+    if (prios.includes(S.todoFilter)) return t.priority === S.todoFilter;
+    if (stats.includes(S.todoFilter)) return t.status === S.todoFilter;
+    return true;
+  }
+  function walk(list) {
+    return list.filter(t => match(t) || (t.children && walk(t.children).length > 0)).map(t => ({...t, children: t.children ? walk(t.children) : []}));
+  }
+  return walk(todos);
+}
+
 function renderTodos() {
-  const total = S.todos.length;
-  const done = S.todos.filter(t=>t.status==='done').length;
-  const doing = S.todos.filter(t=>t.status==='doing').length;
-  const high = S.todos.filter(t=>t.priority==='high'&&t.status!=='done').length;
+  const { total, done, doing, high } = countAll(S.todos);
+  const filtered = filterTodos(S.todos);
+  const allIds = [];
+  function collectIds(list) { for(const t of list){ allIds.push(t._id); if(t.children) collectIds(t.children); } }
+  collectIds(S.todos);
+  const allCollapsed = allIds.every(id => S.collapsedTodos.has(id));
   return `
   <div>
-    <div class="grid-2" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">
+    <div class="grid-2" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
       <div class="card p-4"><p class="text-xs text-muted mb-1">全部</p><p class="snum">${total}</p></div>
       <div class="card p-4"><p class="text-xs text-muted mb-1">已完成</p><p class="snum" style="color:var(--green)">${done}</p></div>
       <div class="card p-4"><p class="text-xs text-muted mb-1">进行中</p><p class="snum" style="color:var(--amber)">${doing}</p></div>
       <div class="card p-4"><p class="text-xs text-muted mb-1">紧急</p><p class="snum" style="color:var(--red)">${high}</p></div>
     </div>
-    <div class="space-y-2">
-      ${S.todos.length===0
-        ? `<div class="card p-6 text-center"><p class="text-muted">还没有待办，在底部输入框快速创建吧</p></div>`
-        : S.todos.map(t=>`
-      <div class="trow ${t.status==='done'?'done':''}" style="padding:12px 14px">
-        <div class="chk ${t.status==='done'?'checked':t.status==='doing'?'doing':''}" onclick="cycleTodoStatus('${t._id}','${t.status}')" title="点击切换状态">
-          ${t.status==='done'?ICON.check:''}
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="truncate" style="font-size:14px;font-weight:500;${t.status==='done'?'text-decoration:line-through;color:var(--muted)':''}">${t.title}</p>
-          ${t.description?`<p class="text-xs text-muted truncate mt-1">${t.description}</p>`:''}
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <select class="inp" style="padding:2px 6px;font-size:12px;height:26px;width:60px" onchange="updateTodoPrio('${t._id}',this.value)">
-            <option value="high" ${t.priority==='high'?'selected':''}>紧急</option>
-            <option value="medium" ${t.priority==='medium'?'selected':''}>中</option>
-            <option value="low" ${t.priority==='low'?'selected':''}>低</option>
-          </select>
-          ${badgeStatus(t.status)}
-          <button class="btn btn-danger btn-xs" onclick="deleteTodo('${t._id}')">${ICON.trash}</button>
-        </div>
-      </div>`).join('')}
+    <div class="flex gap-2 mb-3" style="flex-wrap:wrap;align-items:center">
+      <span class="text-xs text-muted">筛选：</span>
+      ${['all','high','medium','low','todo','doing','done'].map(f=>`<button class="badge ${S.todoFilter===f?'b-owner':'b-todo'}" style="cursor:pointer" onclick="setTodoFilter('${f}')">${f==='all'?'全部':f==='high'?'紧急':f==='medium'?'中优':f==='low'?'低优':f==='todo'?'未开始':f==='doing'?'进行中':'已完成'}</button>`).join('')}
+      <button class="btn btn-surface btn-xs" style="margin-left:auto" onclick="toggleAllTodos()">${allCollapsed?'展开全部':'折叠全部'}</button>
+    </div>
+    <div>
+      ${filtered.length===0
+        ? '<div class="card p-6 text-center"><p class="text-muted">没有符合条件的待办</p></div>'
+        : filtered.flatMap(t=>renderTodoNode(t,0)).join('')}
     </div>
   </div>`;
 }
@@ -703,6 +762,37 @@ async function cycleTeamTodoStatus(teamId, todoId, current) {
     }
     render();
   } catch(e) { toast(e.message||'更新失败', 'error'); }
+}
+
+// ---- 折叠/展开/筛选/子待办 actions ----
+function toggleTodo(id) {
+  if (S.collapsedTodos.has(id)) S.collapsedTodos.delete(id);
+  else S.collapsedTodos.add(id);
+  render();
+}
+
+function toggleAllTodos() {
+  const allIds = [];
+  function collect(list) { for(const t of list){ allIds.push(t._id); if(t.children) collect(t.children); } }
+  collect(S.todos);
+  const allCollapsed = allIds.every(id => S.collapsedTodos.has(id));
+  if (allCollapsed) S.collapsedTodos.clear();
+  else allIds.forEach(id => S.collapsedTodos.add(id));
+  render();
+}
+
+function setTodoFilter(f) { S.todoFilter = f; render(); }
+
+async function quickAddChild(parentId) {
+  const title = prompt('子待办标题：');
+  if (!title || !title.trim()) return;
+  try {
+    const res = await API.todos.create({ title: title.trim(), priority: 'medium', parentId });
+    await loadTodos();
+    S.collapsedTodos.delete(parentId);
+    render();
+    toast('子待办创建成功', 'success');
+  } catch(e) { toast(e.message || '创建失败', 'error'); }
 }
 
 async function updateTodoPrio(id, priority) {
