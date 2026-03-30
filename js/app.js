@@ -415,7 +415,7 @@ function renderTodoNode(t, depth) {
       <span class="badge ${prio==='high'?'b-high':prio==='low'?'b-low':'b-medium'}" style="cursor:pointer;font-size:11px;padding:2px 7px" onclick="updateTodoPrio('${t._id}','${prioNext}')" title="点击切换优先级">${prio==='high'?'紧急':prio==='low'?'低':'中'}</span>
       ${badgeStatus(t.status)}
       <button class="btn btn-danger btn-xs" style="padding:2px 6px" onclick="deleteTodo('${t._id}')">${ICON.trash}</button>
-      ${depth < 3 ? '<button class="btn btn-surface btn-xs" style="padding:2px 6px;font-size:11px" onclick="quickAddChild(''+t._id+'')" title="添加子待办">+子</button>' : ''}
+      ${depth < 3 ? '<button class="btn btn-surface btn-xs" style="padding:2px 6px;font-size:11px" onclick="quickAddChild(\"'+t._id+'\")">+子</button>' : ''}
     </div>
   </div>`);
   if (hasChildren && !collapsed) {
